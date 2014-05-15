@@ -84,6 +84,7 @@ public:
 
 	bool IsDeleted() const				{ return m_deleted; }
 	bool IsConnected() const			{ return m_connected; }
+    
 	sockaddr_in & GetRemoteStruct()		{ return m_client; }
 	CircularBuffer& GetReadBuffer()		{ return m_readBuffer; }
 	CircularBuffer& GetWriteBuffer()	{ return m_writeBuffer; }

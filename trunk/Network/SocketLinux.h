@@ -106,8 +106,8 @@ public:
 	// Atomic wrapper functions for increasing read/write locks
 	void IncSendLock()
 	{
-	    ++m_writeLock;
-        }
+        ++m_writeLock;
+    }
 
 	void DecSendLock()
 	{
@@ -117,13 +117,13 @@ public:
 	bool AcquireSendLock()
 	{
 	    if(m_writeLock)
-    	    {
-		return false;
+        {
+            return false;
 	    }
 	    else
 	    {
-		++m_writeLock;
-		return true;
+            ++m_writeLock;
+            return true;
 	    }
 	}
 
