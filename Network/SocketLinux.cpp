@@ -65,7 +65,7 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
     if(result == 0 || errno != EINPROGRESS)
     {
         Log.Error(__FUNCTION__, "result == %d, errno = %d", result, errno);
-        Sleep(timeout * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
         return false;
     }
 
