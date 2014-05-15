@@ -148,9 +148,6 @@
 	
 	//std
 	using namespace std;
-
-	//sleep
-	#define Sleep(ms) 				usleep(1000*ms)	
 	
 	//C++11	
 #ifdef MAC
