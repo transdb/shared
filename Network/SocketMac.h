@@ -132,8 +132,8 @@ public:
     
 	/** Are we connected?
      */
-	bool IsConnected()  { return m_connected; }
-	bool IsDeleted()    { return m_deleted; }
+	bool IsConnected() const    { return m_connected; }
+	bool IsDeleted() const      { return m_deleted; }
     
 protected:
     /** This socket's file descriptor
