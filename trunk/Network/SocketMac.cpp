@@ -65,7 +65,7 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
     if(result == 0 || errno != EINPROGRESS)
     {
         Log.Error(__FUNCTION__, "result == %d, errno = %d", result, errno);
-        Sleep(timeout * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
         return false;
     }
     
@@ -81,7 +81,7 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
     if(kq == -1)
     {
         Log.Error(__FUNCTION__, "kqueue() == -1");
-        Sleep(timeout * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
         return false;
     }
     
@@ -89,7 +89,7 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
     if(kevent(kq, &event, 1, NULL, 0, NULL) < 0)
     {
         Log.Error(__FUNCTION__, "Could not post event on fd %u", m_fd);
-        Sleep(timeout * 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
         return false;
     }    
     
