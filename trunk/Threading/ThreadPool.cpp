@@ -23,7 +23,7 @@
 #define THREAD_RESERVE 4
 CThreadPool ThreadPool;
 
-CThreadPool::CThreadPool() : m_threadsExitedSinceLastCheck(0), m_threadsRequestedSinceLastCheck(0), m_threadsEaten(0), m_threadsToExit(0)
+CThreadPool::CThreadPool() : m_threadsRequestedSinceLastCheck(0), m_threadsExitedSinceLastCheck(0), m_threadsToExit(0), m_threadsEaten(0)
 {
 
 }

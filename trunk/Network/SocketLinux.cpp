@@ -125,7 +125,7 @@ void Socket::_OnConnect()
 void Socket::ReadCallback(size_t len)
 {
 	//lock
-	m_readMutex.Acquire();
+	std::lock_guard<std::mutex> rGuard(m_readMutex);
 	
 	/* Any other platform, we have to call recv() to actually get the data. */
 	size_t space = m_readBuffer.GetSpace();
@@ -139,8 +139,6 @@ void Socket::ReadCallback(size_t len)
 		m_readBuffer.IncrementWritten(bytes);
 		OnRead();
 	}
-
-	m_readMutex.Release();
 }
 
 /* This is called when the socket engine gets an event on the socket */
