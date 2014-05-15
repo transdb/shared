@@ -58,8 +58,8 @@ public:
     
 	/** Are we connected?
 	*/
-	virtual bool IsConnected() = 0;
-	virtual bool IsDeleted() = 0;
+	virtual bool IsConnected() const = 0;
+	virtual bool IsDeleted() const = 0;
 
 	/** Disconnects the socket
 	 */

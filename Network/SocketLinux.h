@@ -41,7 +41,7 @@ public:
 	/** Returns the socket's file descriptor
 	 */
 	SOCKET GetFd()              { return m_fd; }
-    void SetFd(SOCKET fd)       { m_fd = fd; }
+	void SetFd(SOCKET fd)       { m_fd = fd; }
 
 	/** Open a connection to another machine.
 	 */ 
@@ -105,34 +105,26 @@ public:
 
 	// Atomic wrapper functions for increasing read/write locks
 	void IncSendLock()
-    {
-        m_writeLockMutex.Acquire();
-        ++m_writeLock;
-        m_writeLockMutex.Release();
-    }
+	{
+	    ++m_writeLock;
+        }
 
 	void DecSendLock()
-    {
-        m_writeLockMutex.Acquire();
-        --m_writeLock;
-        m_writeLockMutex.Release();
-    }
+	{
+	    --m_writeLock;
+	}
 
 	bool AcquireSendLock()
 	{
-        bool res;
-        m_writeLockMutex.Acquire();
-		if(m_writeLock)
-        {
-			res = false;
-        }
-		else
-		{
-			++m_writeLock;
-			res = true;
-		}
-        m_writeLockMutex.Release();
-        return res;
+	    if(m_writeLock)
+    	    {
+		return false;
+	    }
+	    else
+	    {
+		++m_writeLock;
+		return true;
+	    }
 	}
 
 	// Get the client's ip in numerical form.
@@ -140,17 +132,17 @@ public:
     
 	/** Are we connected?
      */
-	bool IsConnected()  { return m_connected; }
-	bool IsDeleted()    { return m_deleted; }
+	bool IsConnected() const  { return m_connected; }
+	bool IsDeleted() const    { return m_deleted; }
 
 protected:
 	/** This socket's file descriptor
 	 */
-	SOCKET			m_fd;
+	SOCKET              m_fd;
     
 	/** deleted/disconnected markers
 	 */
-	std::atomic<bool>	m_deleted;
+	std::atomic<bool>   m_deleted;
 	std::atomic<bool>   m_connected;
     
 	/** Called when connection is opened.
@@ -168,13 +160,12 @@ protected:
 
 	/** Socket's read/write buffer protection
 	 */
-	Mutex               m_writeMutex;
-	Mutex               m_readMutex;
+	std::mutex          m_writeMutex;
+	std::mutex          m_readMutex;
 	
 	/** Write lock, stops multiple write events from being posted.
 	 */ 
 	std::atomic<long>   m_writeLock;
-	Mutex               m_writeLockMutex;
 };
 
 #endif
