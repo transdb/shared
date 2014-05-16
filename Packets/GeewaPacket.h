@@ -26,10 +26,13 @@ public:
     //clear packet for reuse
     void ClearPacket();
     
-    INLINE bool hasAllData()        { return m_hasAllData; }
-    INLINE size_t allDataCounter()  { return m_allDataCounter; }
-    INLINE HeaderMap &headers()     { return m_headers; }
-    INLINE ByteBuffer &data()       { return m_data; }
+    INLINE bool hasAllData()                        { return m_hasAllData; }
+    INLINE size_t allDataCounter()                  { return m_allDataCounter; }
+    INLINE HeaderMap &headers()                     { return m_headers; }
+    INLINE ByteBuffer &data()                       { return m_data; }
+    INLINE uint32 contentLenght()                   { return m_contentLenght; }
+    INLINE uint16 opcode()                          { return m_opcode; }
+    INLINE void setOpcode(const uint16 &opcode)     { m_opcode = opcode; }
     
 private:
     //Parses HTTP header from input string
@@ -41,6 +44,7 @@ private:
     ByteBuffer  m_data;
     uint32      m_contentLenght;
     uint32      m_headerLenght;
+    uint16      m_opcode;
     HeaderMap   m_headers;
     bool        m_hasAllData;
 };

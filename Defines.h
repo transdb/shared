@@ -148,14 +148,7 @@
 	
 	//std
 	using namespace std;
-	
-	//C++11	
-#ifdef MAC
-    #define shared_ptr              std::tr1::shared_ptr
-#else
-	#define shared_ptr 				std::shared_ptr
-	#define make_shared				std::make_shared
-#endif	
+
 	//imports
 	#define MAX_PATH 				1024
     #define INVALID_HANDLE_VALUE    -1
@@ -208,8 +201,5 @@ extern tm       g_localTime;
 
 //common functions
 #include "CommonFunctions.h"
-
-//structs
-#include "Structs.h"
 
 #endif
