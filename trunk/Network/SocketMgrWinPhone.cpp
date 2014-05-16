@@ -41,38 +41,37 @@ SocketMgr::~SocketMgr()
 
 }
 
-void SocketMgr::SpawnWorkerThreads(uint32 count)
+void SocketMgr::SpawnWorkerThreads()
 {
 	ThreadPool.ExecuteTask(new SocketWorkerThread());
 }
 
 void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
 {
-	LockingPtr<SocketSet> pSockets(m_sockets, m_socketLock);
-	if (pSockets->find(pSocket) == pSockets->end())
+	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
+	if (m_sockets.find(pSocket) == m_sockets.end())
 	{
 		FD_SET(pSocket->GetFd(), &m_allSet);
-		pSockets->insert(pSocket);
+		m_sockets.insert(pSocket);
 		++m_socket_count;
 	}
 }
 
 void SocketMgr::RemoveSocket(BaseSocket * pSocket)
 {
-	LockingPtr<SocketSet> pSockets(m_sockets, m_socketLock);
-	if (pSockets->find(pSocket) != pSockets->end())
+	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
+	if (m_sockets.find(pSocket) != m_sockets.end())
 	{
 		FD_CLR(pSocket->GetFd(), &m_allSet);
-		pSockets->erase(pSocket);
+		m_sockets.erase(pSocket);
 		--m_socket_count;
 	}
 }
 
 void SocketMgr::WantWrite(BaseSocket * pSocket)
 {
-	m_socketLock.Acquire();
+	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	FD_SET(pSocket->GetFd(), &m_writableSet);
-	m_socketLock.Release();
 }
 
 void SocketMgr::thread_func(ThreadContext *pContext)
@@ -88,10 +87,10 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 
 	for (;;)
 	{
-		m_socketLock.Acquire();
+		m_socketLock.lock();
 		if (m_socket_count == 0)
 		{
-			m_socketLock.Release();
+			m_socketLock.unlock();
 			pContext->Wait(50);
 			continue;
 		}
@@ -103,9 +102,9 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 		/* clear the writable set for the next loop */
 		FD_ZERO(&m_writableSet);
 
-		m_socketLock.Acquire();
+		m_socketLock.lock();
 		fd_count = select(FD_SETSIZE, &m_readableSet, &writable, &m_exceptionSet, &rTimeout);
-		m_socketLock.Release();
+		m_socketLock.unlock();
 		if (fd_count < 0)
 		{
 			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, WSAGetLastError());
@@ -153,7 +152,7 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 
 		/* clear the exception set for the next loop */
 		FD_ZERO(&m_exceptionSet);
-		m_socketLock.Release();
+		m_socketLock.unlock();
 	}
 }
 
@@ -166,14 +165,15 @@ bool SocketWorkerThread::run()
 
 void SocketMgr::CloseAll()
 {
+	LockingPtr<SocketSet> pSockets(m_sockets, NULL);
 	list<BaseSocket*> tokill;
 
-	m_socketLock.Acquire();
-	for(SocketSet::iterator itr = m_sockets.begin(); itr != m_sockets.end(); ++itr)
+	m_socketLock.lock();
+	for (SocketSet::iterator itr = pSockets->begin(); itr != pSockets->end(); ++itr)
 	{
 		tokill.push_back(*itr);
 	}
-	m_socketLock.Release();
+	m_socketLock.unlock();
 	
 	for (list<BaseSocket*>::iterator itr = tokill.begin(); itr != tokill.end(); ++itr)
 	{
@@ -183,9 +183,9 @@ void SocketMgr::CloseAll()
 	size_t size = 0;
 	do
 	{
-		m_socketLock.Acquire();
-		size = m_sockets.size();
-		m_socketLock.Release();
+		m_socketLock.lock();
+		size = pSockets->size();
+		m_socketLock.unlock();
 	}while(size);
 }
 

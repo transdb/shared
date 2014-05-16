@@ -24,9 +24,9 @@ createFileSingleton(ScreenLog);
 ScreenLog::ScreenLog() : m_pFileLog(NULL)
 {
 	m_log_level		= 3;
-#ifdef WIN32	
-	m_stderr_handle	= GetStdHandle(STD_ERROR_HANDLE);
-	m_stdout_handle	= GetStdHandle(STD_OUTPUT_HANDLE);
+#if defined(WIN32) && !defined(WP8)
+	m_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	m_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 }
 
@@ -62,14 +62,24 @@ void ScreenLog::Color(unsigned int color)
 		};
 		fputs(colorstrings[color], stdout);
 #endif
-#else	
+#elif defined(WP8)
+	//nothing
+#else
 	SetConsoleTextAttribute(m_stdout_handle, (WORD)color);
 #endif
 }
 
 void ScreenLog::Time()
 {
+#ifdef WP8
+	char szBuf[512] = { 0 };
+	wchar_t sWBuff[512] = { 0 };
+	snprintf(szBuf, sizeof(szBuf), "%02u:%02u:%02u ", (uint32)g_localTime.tm_hour, (uint32)g_localTime.tm_min, (uint32)g_localTime.tm_sec);
+	MultiByteToWideChar(CP_UTF8, 0, szBuf, -1, sWBuff, sizeof(sWBuff));
+	OutputDebugString(sWBuff);
+#else
 	printf("%02u:%02u:%02u ", (uint32)g_localTime.tm_hour, (uint32)g_localTime.tm_min, (uint32)g_localTime.tm_sec);
+#endif
 }
 
 void ScreenLog::Line()
@@ -101,26 +111,54 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
     }
     else
     {    
-        /* notice is old loglevel 0/string */
-        LOCK_LOG;
-        va_list ap;
-        va_start(ap, format);
-        Time();
-        fputs("N ", stdout);
-        if(*source)
-        {
-            Color(TWHITE);
-            fputs(source, stdout);
-            putchar(':');
-            putchar(' ');
-            Color(TNORMAL);
-        }
-        
-        vprintf(format, ap);
-        putchar('\n');
-        va_end(ap);
-        Color(TNORMAL);
-        UNLOCK_LOG;
+		/* notice is old loglevel 0/string */
+		LOCK_LOG;
+
+		va_list ap;
+		va_start(ap, format);
+
+#if defined(ANDROID)
+		__android_log_vprint(ANDROID_LOG_INFO, source, format, ap);
+#elif defined(WP8)
+		char scBuff[16384] = { 0 };
+		wchar_t szBuf[16384] = { 0 };
+
+		Time();
+		OutputDebugString(L"N ");
+		if (*source)
+		{
+			//convert to wchar
+			wchar_t sWBuff[512] = { 0 };
+			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+			OutputDebugString(sWBuff);
+			OutputDebugString(L": ");
+		}
+
+		vsnprintf(scBuff, sizeof(scBuff), format, ap);
+		//convert to wchar
+		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+		OutputDebugString(szBuf);
+		OutputDebugString(L"\n");
+#else
+		Time();
+		fputs("N ", stdout);
+		if (*source)
+		{
+			Color(TWHITE);
+			fputs(source, stdout);
+			putchar(':');
+			putchar(' ');
+			Color(TNORMAL);
+		}
+
+		vprintf(format, ap);
+		putchar('\n');
+		Color(TNORMAL);
+#endif
+
+		va_end(ap);
+
+		UNLOCK_LOG;
     }
 }
 
@@ -146,27 +184,56 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
     }
     else
     {        
-        /* warning is old loglevel 2/detail */
-        LOCK_LOG;
-        va_list ap;
-        va_start(ap, format);
-        Time();
-        Color(TYELLOW);
-        fputs("W ", stdout);
-        if(*source)
-        {
-            Color(TWHITE);
-            fputs(source, stdout);
-            putchar(':');
-            putchar(' ');
-            Color(TYELLOW);
-        }
-        
-        vprintf(format, ap);
-        putchar('\n');
-        va_end(ap);
-        Color(TNORMAL);
-        UNLOCK_LOG;
+		/* warning is old loglevel 2/detail */
+		LOCK_LOG;
+
+		va_list ap;
+		va_start(ap, format);
+
+#if defined(ANDROID)
+		__android_log_vprint(ANDROID_LOG_WARN, source, format, ap);
+#elif defined(WP8)
+		char scBuff[16384] = { 0 };
+		wchar_t szBuf[16384] = { 0 };
+
+		Time();
+		OutputDebugString(L"W ");
+		if (*source)
+		{
+			//convert to wchar
+			wchar_t sWBuff[512] = { 0 };
+			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+			OutputDebugString(sWBuff);
+			OutputDebugString(L": ");
+		}
+
+		vsnprintf(scBuff, sizeof(scBuff), format, ap);
+		//convert to wchar
+		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+		OutputDebugString(szBuf);
+		OutputDebugString(L"\n");
+#else
+
+		Time();
+		Color(TYELLOW);
+		fputs("W ", stdout);
+		if (*source)
+		{
+			Color(TWHITE);
+			fputs(source, stdout);
+			putchar(':');
+			putchar(' ');
+			Color(TYELLOW);
+		}
+
+		vprintf(format, ap);
+		putchar('\n');
+		Color(TNORMAL);
+#endif
+
+		va_end(ap);
+
+		UNLOCK_LOG;
     }
 }
 
@@ -192,26 +259,54 @@ void ScreenLog::Success(const char * source, const char * format, ...)
     }
     else
     {        
-        LOCK_LOG;
-        va_list ap;
-        va_start(ap, format);
-        Time();
-        Color(TGREEN);
-        fputs("S ", stdout);
-        if(*source)
-        {
-            Color(TWHITE);
-            fputs(source, stdout);
-            putchar(':');
-            putchar(' ');
-            Color(TGREEN);
-        }
-        
-        vprintf(format, ap);
-        putchar('\n');
-        va_end(ap);
-        Color(TNORMAL);
-        UNLOCK_LOG;
+		LOCK_LOG;
+
+		va_list ap;
+		va_start(ap, format);
+
+#if defined(ANDROID)
+		__android_log_vprint(ANDROID_LOG_INFO, source, format, ap);
+#elif defined(WP8)
+		char scBuff[16384] = { 0 };
+		wchar_t szBuf[16384] = { 0 };
+
+		Time();
+		OutputDebugString(L"S ");
+		if (*source)
+		{
+			//convert to wchar
+			wchar_t sWBuff[512] = { 0 };
+			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+			OutputDebugString(sWBuff);
+			OutputDebugString(L": ");
+		}
+
+		vsnprintf(scBuff, sizeof(scBuff), format, ap);
+		//convert to wchar
+		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+		OutputDebugString(szBuf);
+		OutputDebugString(L"\n");
+#else
+		Time();
+		Color(TGREEN);
+		fputs("S ", stdout);
+		if (*source)
+		{
+			Color(TWHITE);
+			fputs(source, stdout);
+			putchar(':');
+			putchar(' ');
+			Color(TGREEN);
+		}
+
+		vprintf(format, ap);
+		putchar('\n');
+		Color(TNORMAL);
+#endif
+
+		va_end(ap);
+
+		UNLOCK_LOG;
     }
 }
 
@@ -237,26 +332,54 @@ void ScreenLog::Error(const char * source, const char * format, ...)
     }
     else
     {        
-        LOCK_LOG;
-        va_list ap;
-        va_start(ap, format);
-        Time();
-        Color(TRED);
-        fputs("E ", stdout);
-        if(*source)
-        {
-            Color(TWHITE);
-            fputs(source, stdout);
-            putchar(':');
-            putchar(' ');
-            Color(TRED);
-        }
-        
-        vprintf(format, ap);
-        putchar('\n');
-        va_end(ap);
-        Color(TNORMAL);
-        UNLOCK_LOG;
+		LOCK_LOG;
+
+		va_list ap;
+		va_start(ap, format);
+
+#if defined(ANDROID)
+		__android_log_vprint(ANDROID_LOG_ERROR, source, format, ap);
+#elif defined(WP8)
+		char scBuff[16384] = { 0 };
+		wchar_t szBuf[16384] = { 0 };
+
+		Time();
+		OutputDebugString(L"E ");
+		if (*source)
+		{
+			//convert to wchar
+			wchar_t sWBuff[512] = { 0 };
+			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+			OutputDebugString(sWBuff);
+			OutputDebugString(L": ");
+		}
+
+		vsnprintf(scBuff, sizeof(scBuff), format, ap);
+		//convert to wchar
+		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+		OutputDebugString(szBuf);
+		OutputDebugString(L"\n");
+#else
+		Time();
+		Color(TRED);
+		fputs("E ", stdout);
+		if (*source)
+		{
+			Color(TWHITE);
+			fputs(source, stdout);
+			putchar(':');
+			putchar(' ');
+			Color(TRED);
+		}
+
+		vprintf(format, ap);
+		putchar('\n');
+		Color(TNORMAL);
+#endif
+
+		va_end(ap);
+
+		UNLOCK_LOG;
     }
 }
 
@@ -282,26 +405,54 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
     }
     else
     {
-        LOCK_LOG;
-        va_list ap;
-        va_start(ap, format);
-        Time();
-        Color(TBLUE);
-        fputs("D ", stdout);
-        if(*source)
-        {
-            Color(TWHITE);
-            fputs(source, stdout);
-            putchar(':');
-            putchar(' ');
-            Color(TBLUE);
-        }
-        
-        vprintf(format, ap);
-        putchar('\n');
-        va_end(ap);
-        Color(TNORMAL);
-        UNLOCK_LOG;
+		LOCK_LOG;
+
+		va_list ap;
+		va_start(ap, format);
+
+#if defined(ANDROID)
+		__android_log_vprint(ANDROID_LOG_DEBUG, source, format, ap);
+#elif defined(WP8)
+		char scBuff[16384] = { 0 };
+		wchar_t szBuf[16384] = { 0 };
+
+		Time();
+		OutputDebugString(L"D ");
+		if (*source)
+		{
+			//convert to wchar
+			wchar_t sWBuff[512] = { 0 };
+			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+			OutputDebugString(sWBuff);
+			OutputDebugString(L": ");
+		}
+
+		vsnprintf(scBuff, sizeof(scBuff), format, ap);
+		//convert to wchar
+		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+		OutputDebugString(szBuf);
+		OutputDebugString(L"\n");
+#else
+		Time();
+		Color(TBLUE);
+		fputs("D ", stdout);
+		if (*source)
+		{
+			Color(TWHITE);
+			fputs(source, stdout);
+			putchar(':');
+			putchar(' ');
+			Color(TBLUE);
+		}
+
+		vprintf(format, ap);
+		putchar('\n');
+		Color(TNORMAL);
+#endif
+
+		va_end(ap);
+
+		UNLOCK_LOG;
     }
 }
 

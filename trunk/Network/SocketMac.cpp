@@ -41,6 +41,9 @@ Socket::Socket(SOCKET fd, size_t readbuffersize, size_t writebuffersize) : m_rea
     /* set keep alive */
     SocketOps::KeepAlive(m_fd);
     
+	/* set send recv timeout */
+	SocketOps::SetTimeout(m_fd, SOCKET_SEND_RECV_TIMEOUT);
+
 	m_writeLock 	= 0;
 	m_deleted 		= false;
 	m_connected 	= false;
