@@ -37,8 +37,9 @@
 //	#define _HAS_EXCEPTIONS 0
 //	#define _CRT_DISABLE_PERFCRIT_LOCKS
 #endif
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
 	#define _CRT_SECURE_NO_WARNINGS
+	#define _SCL_SECURE_NO_WARNINGS
 	#define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
@@ -55,14 +56,20 @@
 #include <sys/stat.h>
 
 #ifdef WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#define NOMINMAX
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+	#endif
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 	#include <windows.h>
 
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
 	#include <process.h>
+#ifndef WP8
 	#include <ktmw32.h>
+#endif
 #else
     #include <sys/mman.h>
 	#include <sys/time.h>
@@ -165,10 +172,11 @@
     #define localtime(a,b) localtime_s(b,a)
 	#define snprintf _snprintf
 	#define strnicmp _strnicmp
+	#define stricmp _stricmp
 	#define I64FMT "%016I64X"
 	#define I64FMTD "%I64u"
 	#define SI64FMTD "%I64d"
-    #define THREAD_LOCAL_STORAGE __declspec(thread)
+	#define atoll _atoi64
 #else
     #define localtime localtime_r
 	#define stricmp strcasecmp
@@ -176,7 +184,6 @@
 	#define I64FMT "%016llX"
 	#define I64FMTD "%llu"
 	#define SI64FMTD "%lld"
-    #define THREAD_LOCAL_STORAGE __thread
 #endif
 
 //time

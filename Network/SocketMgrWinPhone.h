@@ -45,7 +45,7 @@ public:
 	void CloseAll();
 
 	/// spawns worker threads
-	void SpawnWorkerThreads(uint32 count);
+	void SpawnWorkerThreads();
 
 	/// This is called when a socket has data to write for the first time.
 	void WantWrite(BaseSocket * pSocket);
@@ -61,7 +61,7 @@ private:
 	uint32					m_socket_count;
 
 	SocketSet				m_sockets;
-	Mutex					m_socketLock;
+	std::recursive_mutex	m_socketLock;
 	volatile long			m_threadcount;
 };
 

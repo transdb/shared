@@ -47,6 +47,8 @@
     #endif
 #endif
 
+#define SOCKET_SEND_RECV_TIMEOUT 15
+
 /* IOCP Defines */
 
 #ifdef CONFIG_USE_IOCP

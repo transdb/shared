@@ -68,7 +68,7 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
 	if (result == 0 || WSAGetLastError() != WSAEWOULDBLOCK)
 	{
 		Log.Error(__FUNCTION__, "result == %d, errno = %d", result, WSAGetLastError());
-		Sleep(timeout * 1000);
+		std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
 		return false;
 	}
 
@@ -128,7 +128,7 @@ void Socket::_OnConnect()
 void Socket::ReadCallback(size_t len)
 {
 	//lock
-	m_readMutex.Acquire();
+	std::lock_guard<std::mutex> rGuard(m_readMutex);
 
 	/* Any other platform, we have to call recv() to actually get the data. */
 	size_t space = m_readBuffer.GetSpace();
@@ -142,8 +142,6 @@ void Socket::ReadCallback(size_t len)
 		m_readBuffer.IncrementWritten(bytes);
 		OnRead();
 	}
-
-	m_readMutex.Release();
 }
 
 /* This is called when the socket engine gets an event on the socket */
