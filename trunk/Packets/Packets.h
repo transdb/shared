@@ -27,43 +27,40 @@
 class Packet : public ByteBuffer
 {
 public:
-    INLINE Packet() : ByteBuffer(), m_opcode(0), m_bufferPool(-1) { }
-	INLINE Packet(const uint16 &opcode, const size_t &res) : ByteBuffer(res), m_opcode(opcode), m_bufferPool(-1) {}
-	INLINE Packet(const size_t &res) : ByteBuffer(res), m_opcode(0), m_bufferPool(-1) { }
-    INLINE Packet(const Packet &packet) : ByteBuffer(packet), m_opcode(packet.m_opcode), m_bufferPool(-1) {}
+    INLINE Packet() : ByteBuffer(), m_opcode(0) { }
+	INLINE Packet(uint16 opcode, size_t res) : ByteBuffer(res), m_opcode(opcode) {}
+	INLINE Packet(size_t res) : ByteBuffer(res), m_opcode(0) { }
+    INLINE Packet(const Packet &packet) : ByteBuffer(packet), m_opcode(packet.m_opcode) {}
 
     //! Clear packet and set opcode all in one mighty blow
-    INLINE void Initialize(const uint16 &opcode, size_t newres = 200)
+    INLINE void Initialize(uint16 opcode, size_t newres = 200)
     {
         clear();
 		m_storage.reserve(newres);
         m_opcode = opcode;
     }
 
-    INLINE const uint16 &GetOpcode() const          { return m_opcode; }
-    INLINE void SetOpcode(const uint16 &opcode)     { m_opcode = opcode; }
+    INLINE uint16 GetOpcode() const         { return m_opcode; }
+    INLINE void SetOpcode(uint16 opcode)	{ m_opcode = opcode; }
 
 protected:
     uint16 m_opcode;
-
-public:
-	int8 m_bufferPool;
 };
 
 class StackPacket : public StackBuffer
 {
 public:
-	INLINE StackPacket(const uint16 &opcode, uint8* ptr, const size_t &sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
+	INLINE StackPacket(uint16 opcode, uint8* ptr, size_t sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
 
 	//! Clear packet and set opcode all in one mighty blow
-	INLINE void Initialize(const uint16 &opcode)
+	INLINE void Initialize(uint16 opcode)
 	{
 		StackBuffer::Clear();
 		m_opcode = opcode;
 	}
 
-    INLINE const uint16 &GetOpcode() const          { return m_opcode; }
-    INLINE void SetOpcode(const uint16 &opcode)     { m_opcode = opcode; }
+    INLINE uint16 GetOpcode() const         { return m_opcode; }
+    INLINE void SetOpcode(uint16 opcode)	{ m_opcode = opcode; }
 
 protected:
 	uint16 m_opcode;

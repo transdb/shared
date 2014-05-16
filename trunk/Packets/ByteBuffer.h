@@ -20,199 +20,198 @@
 #ifndef BYTEBUFFER_H
 #define BYTEBUFFER_H
 
-#include "../Containers/Vector.h"
+#include "../Defines.h"
 
-class ByteBuffer 
+class ByteBuffer
 {
 public:
-	explicit ByteBuffer(): m_rpos(0), m_wpos(0)
+	const static size_t DEFAULT_SIZE = 256;
+    
+	ByteBuffer(): m_rpos(0), m_wpos(0)
 	{
-
+		m_storage.reserve(DEFAULT_SIZE);
 	}
-
-	explicit ByteBuffer(const size_t &res): m_rpos(0), m_wpos(0)
+    
+	ByteBuffer(size_t res): m_rpos(0), m_wpos(0)
 	{
 		m_storage.reserve(res);
 	}
-
-	explicit ByteBuffer(const ByteBuffer &buf): m_rpos(buf.m_rpos), m_wpos(buf.m_wpos), m_storage(buf.m_storage)
-    {
-        
-    }
-
+    
+	ByteBuffer(const ByteBuffer &buf): m_rpos(buf.m_rpos), m_wpos(buf.m_wpos), m_storage(buf.m_storage) { }
+    
 	virtual ~ByteBuffer() {}
-
-	INLINE void clear()
+    
+	void clear()
 	{
 		m_storage.clear();
 		m_rpos = m_wpos = 0;
 	}
-
+    
 	template <typename T>
-    INLINE void append(T value)
+    void append(T value)
 	{
 		append((uint8*)&value, sizeof(value));
 	}
-
+    
 	template <typename T>
-    INLINE void put(const size_t &pos, T value)
+    void put(size_t pos, T value)
 	{
-		put(pos, (uint8*)&value, sizeof(value));
+		put(pos,(uint8*)&value, sizeof(value));
 	}
-
+    
 	// stream like operators for storing data
-	ByteBuffer &operator<<(const bool &value)
+	ByteBuffer &operator<<(bool value)
 	{
 		append<char>((char)value);
 		return *this;
 	}
-
+    
 	// unsigned
-	ByteBuffer &operator<<(const uint8 &value)
+	ByteBuffer &operator<<(uint8 value)
 	{
 		append<uint8>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const uint16 &value)
+    
+	ByteBuffer &operator<<(uint16 value)
 	{
 		append<uint16>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const uint32 &value)
+    
+	ByteBuffer &operator<<(uint32 value)
 	{
 		append<uint32>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const uint64 &value)
+    
+	ByteBuffer &operator<<(uint64 value)
 	{
 		append<uint64>(value);
 		return *this;
 	}
-
+    
 	// signed as in 2e complement
-	ByteBuffer &operator<<(const int8 &value)
+	ByteBuffer &operator<<(int8 value)
 	{
 		append<int8>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const int16 &value)
+    
+	ByteBuffer &operator<<(int16 value)
 	{
 		append<int16>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const int32 &value)
+    
+	ByteBuffer &operator<<(int32 value)
 	{
 		append<int32>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const int64 &value)
+    
+	ByteBuffer &operator<<(int64 value)
 	{
 		append<int64>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const float &value)
+    
+	ByteBuffer &operator<<(float value)
 	{
 		append<float>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const double &value)
+    
+	ByteBuffer &operator<<(double value)
 	{
 		append<double>(value);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const std::string &value) 
+    
+	ByteBuffer &operator<<(const std::string &value)
 	{
 		append((uint8*)value.c_str(), value.length());
 		append((uint8)0);
 		return *this;
 	}
-
-	ByteBuffer &operator<<(const char *str) 
+    
+	ByteBuffer &operator<<(const char *str)
 	{
 		append((uint8*)str, strlen(str));
 		append((uint8)0);
 		return *this;
 	}
-
+    
 	// stream like operators for reading data
-	ByteBuffer &operator>>(bool &value) 
+	ByteBuffer &operator>>(bool &value)
 	{
 		value = read<char>() > 0 ? true : false;
 		return *this;
 	}
-
+    
 	//unsigned
-	ByteBuffer &operator>>(uint8 &value) 
+	ByteBuffer &operator>>(uint8 &value)
 	{
 		value = read<uint8>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(uint16 &value) 
+    
+	ByteBuffer &operator>>(uint16 &value)
 	{
 		value = read<uint16>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(uint32 &value) 
+    
+	ByteBuffer &operator>>(uint32 &value)
 	{
 		value = read<uint32>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(uint64 &value) 
+    
+	ByteBuffer &operator>>(uint64 &value)
 	{
 		value = read<uint64>();
 		return *this;
 	}
-
+    
 	//signed as in 2e complement
-	ByteBuffer &operator>>(int8 &value) 
+	ByteBuffer &operator>>(int8 &value)
 	{
 		value = read<int8>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(int16 &value) 
+    
+	ByteBuffer &operator>>(int16 &value)
 	{
 		value = read<int16>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(int32 &value) 
+    
+	ByteBuffer &operator>>(int32 &value)
 	{
 		value = read<int32>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(int64 &value) 
+    
+	ByteBuffer &operator>>(int64 &value)
 	{
 		value = read<int64>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(float &value) 
+    
+	ByteBuffer &operator>>(float &value)
 	{
 		value = read<float>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(double &value) 
+    
+	ByteBuffer &operator>>(double &value)
 	{
 		value = read<double>();
 		return *this;
 	}
-
-	ByteBuffer &operator>>(std::string& value) 
+    
+	ByteBuffer &operator>>(std::string& value)
 	{
 		value.clear();
 		value.reserve(16);
@@ -220,162 +219,145 @@ public:
 		{
 			char c = read<char>();
 			if(c == 0)
-				break;
-
+                break;
+            
 			value += c;
 		}
 		return *this;
 	}
-
-	INLINE uint8 operator[](const size_t &pos)
+    
+	uint8 operator[](size_t pos)
 	{
 		return read<uint8>(pos);
 	}
-
-	INLINE size_t rpos()
+    
+	size_t rpos()
 	{
 		return m_rpos;
-	}
-
-	INLINE size_t rpos(const size_t &rpos)
+	};
+    
+	size_t rpos(size_t rpos)
 	{
 		m_rpos = rpos;
 		return m_rpos;
 	}
-
-	INLINE size_t wpos() 
+    
+	size_t wpos()
 	{
 		return m_wpos;
 	}
-
-	INLINE size_t wpos(const size_t &wpos)
+    
+	size_t wpos(size_t wpos)
 	{
 		m_wpos = wpos;
 		return m_wpos;
 	}
-
+    
 	template <typename T>
-    INLINE T read()
+    T read()
 	{
 		T r = read<T>(m_rpos);
 		m_rpos += sizeof(T);
 		return r;
 	}
-
+    
 	template <typename T>
-    INLINE T read(const size_t &pos) const
+    T read(size_t pos) const
 	{
 		if(pos + sizeof(T) > size())
 		{
 			return (T)0;
-		} 
-		else 
+		}
+		else
 		{
-			return *((T*)&m_storage[pos]);
+			T value;
+			memcpy(&value, &m_storage[pos], sizeof(T));
+			return value;
 		}
 	}
-
-	INLINE void read(uint8 *dest, const size_t &len)
+    
+	void read(uint8 *dest, size_t len)
 	{
-		if(m_rpos + len <= size()) 
+		if(m_rpos + len <= size())
 		{
 			memcpy(dest, &m_storage[m_rpos], len);
-		} 
-		else 
+		}
+		else
 		{
 			memset(dest, 0, len);
 		}
 		m_rpos += len;
 	}
-
-	INLINE const uint8 *contents() const 
-	{ 
-		return &m_storage[0]; 
+    
+	const uint8 *contents() const
+	{
+		return m_storage.data();
 	}
-
-	INLINE size_t size() const
-	{ 
-		return m_storage.size(); 
+    
+	size_t size() const
+	{
+		return m_storage.size();
 	}
-
-	INLINE void resize(const size_t &newsize)
+    
+	void resize(size_t newsize)
 	{
 		m_storage.resize(newsize);
 		m_rpos = 0;
 		m_wpos = size();
 	}
-
-	INLINE void reserve(const size_t &ressize)
+    
+	void reserve(size_t ressize)
 	{
-		if(ressize > size()) 
+		if(ressize > size())
 		{
 			m_storage.reserve(ressize);
 		}
 	}
-
-	// appending to the end of buffer
-	void appendLengthCodedString(const std::string& str) 
-	{
-		append<uint8>(static_cast<uint8>(str.size()));	//size
-		append((uint8*)str.c_str(), str.size());		//non-null terminated string
-	}
     
-    void appendNonNullTermStr(const char *str, ...)
-    {
-        char rOut[2048];
-        
-        va_list ap;
-        va_start(ap, str);
-        vsnprintf(rOut, sizeof(rOut), str, ap);
-        va_end(ap);
-        
-        append((uint8*)rOut, strlen(rOut));
-    }
-    
-	INLINE void append(const std::string & str)
+	void append(const std::string & str)
 	{
 		append((uint8*)str.c_str(), str.length());
 		append<uint8>(0);
 	}
-
-	INLINE void append(const char * src, const size_t &cnt)
+    
+	void append(const char * src, size_t cnt)
 	{
 		append((const uint8*)src, cnt);
 	}
-
-	INLINE void append(const void * src, const size_t &cnt)
+    
+	void append(const void * src, size_t cnt)
 	{
 		append((const uint8*)src, cnt);
 	}
-
-	INLINE void append(const uint8 *src, const size_t &cnt)
+    
+	void append(const uint8 *src, size_t cnt)
 	{
-		if(!cnt) 
-			return;
-
+		if(!cnt)
+            return;
+        
 		if(m_storage.size() < m_wpos + cnt)
 		{
 			m_storage.resize(m_wpos + cnt);
 		}
-
+        
 		memcpy(&m_storage[m_wpos], src, cnt);
 		m_wpos += cnt;
 	}
-
-	INLINE void append(const ByteBuffer& buffer)
+    
+	void append(const ByteBuffer& buffer)
 	{
-		if(buffer.size() > 0) 
+		if(buffer.size() > 0)
 		{
 			append(buffer.contents(), buffer.size());
 		}
 	}
-
-	INLINE void put(const size_t &pos, const uint8 * src, const size_t &cnt)
+    
+	void put(size_t pos, const uint8 * src, size_t cnt)
 	{
 		assert(pos + cnt <= size());
 		memcpy(&m_storage[pos], src, cnt);
 	}
-
+    
 	void hexlike()
 	{
 		size_t j = 1, k = 1;
@@ -392,19 +374,19 @@ public:
 				{
 					printf("| %X ", read<uint8>(i));
 				}
-
+                
 				j++;
 			}
 			else if (i == (k*16))
 			{
 				rpos(rpos()-16);	// move read pointer 16 places back
 				printf(" | ");	  // write split char
-
+                
 				for (int x = 0; x <16; x++)
 				{
 					printf("%c", read<uint8>(i-16 + x));
 				}
-
+                
 				if (read<uint8>(i) <= 0x0F)
 				{
 					printf("\n0%X ", read<uint8>(i));
@@ -413,7 +395,7 @@ public:
 				{
 					printf("\n%X ", read<uint8>(i));
 				}
-
+                
 				k++;
 				j++;
 			}
@@ -431,12 +413,17 @@ public:
 		}
 		printf("\n");
 	}
-
+    
+	void reverse()
+	{
+		std::reverse(m_storage.begin(), m_storage.end());
+	}
+    
 protected:
 	// read and write positions
 	size_t				m_rpos;
 	size_t				m_wpos;
-	Vector<uint8>       m_storage;
+	std::vector<uint8>	m_storage;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -489,9 +476,10 @@ template <typename T> ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v)
 
 template <typename K, typename V> ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
 {
-	b <<(uint32)m.size();
-	for (typename std::map<K, V>::iterator i = m.begin(); i != m.end(); ++i) {
-		b <<i->first <<i->second;
+	b << (uint32)m.size();
+	for (typename std::map<K, V>::iterator i = m.begin(); i != m.end(); ++i)
+    {
+		b << i->first << i->second;
 	}
 	return b;
 }
@@ -499,12 +487,13 @@ template <typename K, typename V> ByteBuffer &operator<<(ByteBuffer &b, std::map
 template <typename K, typename V> ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m)
 {
 	uint32 msize;
-	b>> msize;
+	b >> msize;
 	m.clear();
-	while(msize--) {
+	while(msize--)
+    {
 		K k;
 		V v;
-		b>> k>> v;
+		b >> k >> v;
 		m.insert(make_pair(k, v));
 	}
 	return b;

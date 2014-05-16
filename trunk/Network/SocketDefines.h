@@ -23,8 +23,10 @@
 
 /* Implementation Selection */
 #include "../Defines.h"
-#ifdef WIN32
-	#define CONFIG_USE_IOCP
+#if defined(WIN32) && !defined(WP8)
+    #define CONFIG_USE_IOCP
+#elif WP8
+    #define CONFIG_USE_WP8
 #else
     #ifdef MAC
         //MAC sockets

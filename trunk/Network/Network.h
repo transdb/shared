@@ -32,6 +32,12 @@
 	#include "ListenSocketWin32.h"
 #endif
 
+#ifdef CONFIG_USE_WP8
+    #include "BaseSocket.h"
+    #include "SocketWindowsPhone.h"
+    #include "SocketMgrWinPhone.h"
+#endif
+
 #ifdef CONFIG_USE_EPOLL
 	#include "BaseSocket.h"
 	#include "SocketLinux.h"
