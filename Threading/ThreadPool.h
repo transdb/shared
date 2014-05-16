@@ -54,7 +54,7 @@ public:
         rTP_Mutex.unlock();
         
         //used to avoid spurious wakeups
-        m_rCond.wait(rLock, [=]{ return m_signaled.load(); });
+        m_rCond.wait(rLock, [&]{ return m_signaled; });
         m_signaled = false;
 	}
 	
@@ -73,7 +73,7 @@ public:
 private:
     CThreadPool                     &m_rThreadPool;
     std::atomic<ThreadContext*>     m_pExecutionTarget;
-    std::atomic<bool>               m_signaled;
+    bool                            m_signaled;
     uint32                          m_threadId;
     std::condition_variable         m_rCond;
     std::mutex                      m_rCondMutex;
