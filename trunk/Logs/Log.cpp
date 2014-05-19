@@ -19,6 +19,10 @@
 
 #include "Log.h"
 
+#ifdef ANDROID
+    #include <android/log.h>
+#endif
+
 createFileSingleton(ScreenLog);
 
 ScreenLog::ScreenLog() : m_pFileLog(NULL)
