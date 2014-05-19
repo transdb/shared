@@ -95,6 +95,7 @@ private:
 
     ThreadSet   m_activeThreads;
 	ThreadSet   m_freeThreads;
+    ThreadSet   m_suspendedThreads;
     
 public:
 	explicit CThreadPool();
@@ -114,6 +115,12 @@ public:
 
 	// prints some neat debug stats
 	void ShowStats();
+    
+    //suspend running threads ThreadContext::Wait wil not return
+    void SuspendThreads();
+    
+    //wakeup suspended threads
+    void WakeUpThreads();
 
 private:
 	// return true - suspend ourselves, and wait for a future task.

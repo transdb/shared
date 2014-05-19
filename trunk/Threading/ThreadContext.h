@@ -23,7 +23,7 @@
 class ThreadContext
 {
 public:
-	ThreadContext() : m_threadRunning(true)
+	ThreadContext() : m_threadRunning(true), m_suspendSelf(false)
 	{
 
 	}
@@ -40,6 +40,18 @@ public:
 		Terminate(); 
 	}
 
+    void OnSuspend()
+    {
+        m_suspendSelf = true;
+    }
+    
+    void WakeUp()
+    {
+        std::unique_lock<std::mutex> rLock(m_rCondMutex);
+        m_suspendSelf = false;
+        m_rCond.notify_one();
+    }
+    
 	void Terminate() 
 	{
         std::unique_lock<std::mutex> rLock(m_rCondMutex);
@@ -55,13 +67,17 @@ public:
     void Wait(long ms)
     {
         std::unique_lock<std::mutex> rLock(m_rCondMutex);
-        m_rCond.wait_for(rLock, std::chrono::milliseconds(ms));
+        if(m_suspendSelf == true)
+            m_rCond.wait(rLock);
+        else
+            m_rCond.wait_for(rLock, std::chrono::milliseconds(ms));
     }
 
 protected:
     std::condition_variable m_rCond;
     std::mutex              m_rCondMutex;
 	std::atomic<bool>       m_threadRunning;
+    std::atomic<bool>       m_suspendSelf;
 };
 
 #endif
