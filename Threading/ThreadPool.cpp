@@ -204,10 +204,44 @@ void CThreadPool::KillFreeThreads(std::unique_lock<std::mutex> &rGuard, uint32 c
 	}
 }
 
+void CThreadPool::SuspendThreads()
+{
+    std::unique_lock<std::mutex> rGuard(m_mutex);
+    
+    size_t tcount = m_activeThreads.size();
+    Log.Debug("ThreadPool", "Suspending %u threads.", tcount);
+    
+	for(ThreadSet::iterator itr = m_activeThreads.begin();itr != m_activeThreads.end();++itr)
+	{
+		if((*itr)->m_pExecutionTarget.load() != NULL)
+		{
+			(*itr)->m_pExecutionTarget.load()->OnSuspend();
+            m_suspendedThreads.insert(*itr);
+		}
+	}
+}
+
+void CThreadPool::WakeUpThreads()
+{
+    std::unique_lock<std::mutex> rGuard(m_mutex);
+    
+    size_t tcount = m_suspendedThreads.size();
+    Log.Debug("ThreadPool", "Waking up %u threads.", tcount);
+    
+    for(ThreadSet::iterator itr = m_suspendedThreads.begin();itr != m_suspendedThreads.end();++itr)
+    {
+        if((*itr)->m_pExecutionTarget.load() != NULL)
+		{
+			(*itr)->m_pExecutionTarget.load()->WakeUp();
+		}
+    }
+    m_suspendedThreads.clear();
+}
+
 void CThreadPool::Shutdown()
 {
     {   //lock
-        std::unique_lock<std::mutex> rGuard;
+        std::unique_lock<std::mutex> rGuard(m_mutex);
         size_t tcount = m_activeThreads.size() + m_freeThreads.size();		// exit all
         Log.Debug("ThreadPool", "Shutting down %u threads.", tcount);
         KillFreeThreads(rGuard, (uint32)m_freeThreads.size());
