@@ -41,19 +41,20 @@ class FileLog
 {
 private:
 	FILE *          m_file;
-    std::string      m_filename;
-    std::mutex      m_lock;
+    std::string     m_filename;
     
 public:
-	FileLog(const char * filename, bool open);
+	explicit FileLog(const std::string &sFilePath);
 	~FileLog();
     
 	void write(const char* format, ...);
-	bool IsOpen() { return (m_file != NULL); }
-	void Open();
-	void Close();
     
-    INLINE string &GetFileName()
+ 	INLINE bool IsOpen()
+    {
+        return (m_file != NULL);
+    }
+    
+    INLINE std::string &GetFileName()
     {
         return m_filename;
     }
@@ -62,7 +63,7 @@ public:
 class ScreenLog : public Singleton<ScreenLog>
 {
 public:
-	ScreenLog();
+	explicit ScreenLog();
     ~ScreenLog();
 
 	void Notice(const char * source, const char * format, ...);
@@ -71,17 +72,20 @@ public:
 	void Error(const char * source, const char * format, ...);
 	void Debug(const char * source, const char * format, ...);
     
-    void CreateFileLog(std::string sFileName);
-    void CreateFileLog(const char * filename);
+    void CreateFileLog(const std::string &sFilePath);
     
     INLINE void SetLogLevel(int logLevel)
     {
         m_log_level = logLevel;
     }
     
-    INLINE FileLog *GetFileLog()
+    INLINE std::string GetFileLogFileName()
     {
-        return m_pFileLog;
+        std::lock_guard<std::mutex> rGuard(m_lock);
+        if(m_pFileLog && m_pFileLog->IsOpen())
+            return m_pFileLog->GetFileName();
+        else
+            return std::string();
     }
     
 private:
@@ -89,16 +93,13 @@ private:
 	void Time();
 	void Line();
 
-    std::mutex  m_lock;
+    std::mutex                  m_lock;
 #ifdef WIN32	
-	HANDLE      m_stdout_handle;
-	HANDLE      m_stderr_handle;
+	HANDLE                      m_stdout_handle;
+	HANDLE                      m_stderr_handle;
 #endif
-	int32       m_log_level;
-    FileLog     *m_pFileLog;
-
-#define LOCK_LOG	do{ m_lock.lock(); }while(0)
-#define UNLOCK_LOG	do{ m_lock.unlock(); }while(0)
+	int32                       m_log_level;
+    std::unique_ptr<FileLog>    m_pFileLog;
 };
 
 #define Log ScreenLog::getSingleton()

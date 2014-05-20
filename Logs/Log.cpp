@@ -25,7 +25,7 @@
 
 createFileSingleton(ScreenLog);
 
-ScreenLog::ScreenLog() : m_pFileLog(NULL)
+ScreenLog::ScreenLog()
 {
 	m_log_level		= 3;
 #if defined(WIN32) && !defined(WP8)
@@ -36,18 +36,12 @@ ScreenLog::ScreenLog() : m_pFileLog(NULL)
 
 ScreenLog::~ScreenLog()
 {
-    delete m_pFileLog;
+
 }
 
-void ScreenLog::CreateFileLog(std::string sFileName)
+void ScreenLog::CreateFileLog(const std::string &sFilePath)
 {
-    CreateFileLog(sFileName.c_str());
-}
-
-void ScreenLog::CreateFileLog(const char * filename)
-{
-	delete m_pFileLog;
-    m_pFileLog = new FileLog(filename, true);
+    m_pFileLog = std::unique_ptr<FileLog>(new FileLog(sFilePath));
 }
 
 void ScreenLog::Color(unsigned int color)
@@ -59,7 +53,6 @@ void ScreenLog::Color(unsigned int color)
 				"\033[22;31m",
 				"\033[22;32m",
 				"\033[01;33m",
-				//"\033[22;37m",
 				"\033[0m",
 				"\033[01;37m",
 				"\033[1;34m",
@@ -88,9 +81,7 @@ void ScreenLog::Time()
 
 void ScreenLog::Line()
 {
-	LOCK_LOG;
 	putchar('\n');
-	UNLOCK_LOG;
 }
 
 void ScreenLog::Notice(const char * source, const char * format, ...)
@@ -98,7 +89,11 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
     if(m_log_level < 0)
         return;
     
-    if(m_pFileLog)
+    //lock
+    std::lock_guard<std::mutex> rGuard(m_lock);
+    
+    //check is logging is to file
+    if(m_pFileLog && m_pFileLog->IsOpen())
     {
         //create message
         size_t len;
@@ -114,10 +109,8 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
         m_pFileLog->write(out);
     }
     else
-    {    
+    {
 		/* notice is old loglevel 0/string */
-		LOCK_LOG;
-
 		va_list ap;
 		va_start(ap, format);
 
@@ -161,8 +154,6 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
 #endif
 
 		va_end(ap);
-
-		UNLOCK_LOG;
     }
 }
 
@@ -171,7 +162,11 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
     if(m_log_level < 2)
         return;
     
-    if(m_pFileLog)
+    //lock
+    std::lock_guard<std::mutex> rGuard(m_lock);
+    
+    //check is logging is to file
+    if(m_pFileLog && m_pFileLog->IsOpen())
     {
         //create message
         size_t len;
@@ -187,10 +182,8 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
         m_pFileLog->write(out);
     }
     else
-    {        
+    {
 		/* warning is old loglevel 2/detail */
-		LOCK_LOG;
-
 		va_list ap;
 		va_start(ap, format);
 
@@ -236,8 +229,6 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
 #endif
 
 		va_end(ap);
-
-		UNLOCK_LOG;
     }
 }
 
@@ -246,7 +237,11 @@ void ScreenLog::Success(const char * source, const char * format, ...)
     if(m_log_level < 2)
         return;
     
-    if(m_pFileLog)
+    //lock
+    std::lock_guard<std::mutex> rGuard(m_lock);
+    
+    //check is logging is to file
+    if(m_pFileLog && m_pFileLog->IsOpen())
     {
         //create message
         size_t len;
@@ -262,9 +257,7 @@ void ScreenLog::Success(const char * source, const char * format, ...)
         m_pFileLog->write(out);
     }
     else
-    {        
-		LOCK_LOG;
-
+    {
 		va_list ap;
 		va_start(ap, format);
 
@@ -309,8 +302,6 @@ void ScreenLog::Success(const char * source, const char * format, ...)
 #endif
 
 		va_end(ap);
-
-		UNLOCK_LOG;
     }
 }
 
@@ -319,7 +310,11 @@ void ScreenLog::Error(const char * source, const char * format, ...)
     if(m_log_level < 1)
         return;
     
-    if(m_pFileLog)
+    //lock
+    std::lock_guard<std::mutex> rGuard(m_lock);
+    
+    //check is logging is to file
+    if(m_pFileLog && m_pFileLog->IsOpen())
     {
         //create message
         size_t len;
@@ -335,9 +330,7 @@ void ScreenLog::Error(const char * source, const char * format, ...)
         m_pFileLog->write(out);
     }
     else
-    {        
-		LOCK_LOG;
-
+    {
 		va_list ap;
 		va_start(ap, format);
 
@@ -382,8 +375,6 @@ void ScreenLog::Error(const char * source, const char * format, ...)
 #endif
 
 		va_end(ap);
-
-		UNLOCK_LOG;
     }
 }
 
@@ -392,7 +383,11 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
     if(m_log_level < 3)
         return;
     
-    if(m_pFileLog)
+    //lock
+    std::lock_guard<std::mutex> rGuard(m_lock);
+    
+    //check is logging is to file
+    if(m_pFileLog && m_pFileLog->IsOpen())
     {
         //create message
         size_t len;
@@ -409,8 +404,6 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
     }
     else
     {
-		LOCK_LOG;
-
 		va_list ap;
 		va_start(ap, format);
 
@@ -455,17 +448,27 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
 #endif
 
 		va_end(ap);
-
-		UNLOCK_LOG;
     }
+}
+
+FileLog::FileLog(const std::string &sFilePath) : m_file(NULL), m_filename(sFilePath)
+{
+	m_file = fopen(m_filename.c_str(), "a");
+	if(m_file == NULL)
+    {
+        Log.Error(__FUNCTION__, "Cannot create log file on path: %s\n Log to file is disabled.", sFilePath.c_str());
+    }
+}
+
+FileLog::~FileLog()
+{
+	fflush(m_file);
+	fclose(m_file);
+	m_file = NULL;
 }
 
 void FileLog::write(const char* format, ...)
 {
-	if(!m_file)
-		return;
-
-	m_lock.lock();
 	va_list ap;
 	va_start(ap, format);
 	char out[4096];
@@ -481,37 +484,4 @@ void FileLog::write(const char* format, ...)
 	fflush(m_file);
 
 	va_end(ap);
-	m_lock.unlock();
-}
-
-void FileLog::Open()
-{
-	m_file = fopen(m_filename.c_str(), "a");
-	assert(m_file);
-}
-
-void FileLog::Close()
-{
-	if(!m_file) 
-		return;
-
-	fflush(m_file);
-	fclose(m_file);
-	m_file = NULL;
-}
-
-FileLog::FileLog(const char * filename, bool open) : m_file(NULL), m_filename(filename)
-{
-	if(open)
-	{
-		Open();
-	}
-}
-
-FileLog::~FileLog()
-{
-	if(m_file)
-	{
-		Close();
-	}
 }
