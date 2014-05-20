@@ -130,7 +130,7 @@ SocketWorkerThread::~SocketWorkerThread()
 
 bool SocketWorkerThread::run()
 {
-    SetThreadName("SocketWorker thread");
+    Common::SetThreadName("SocketWorker thread");
     //
     timespec rTimeout;
     rTimeout.tv_sec = 10;

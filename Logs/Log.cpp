@@ -451,37 +451,59 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
     }
 }
 
-FileLog::FileLog(const std::string &sFilePath) : m_file(NULL), m_filename(sFilePath)
+FileLog::FileLog(const std::string &sFilePath) : m_hFile(INVALID_HANDLE_VALUE), m_filename(sFilePath)
 {
-	m_file = fopen(m_filename.c_str(), "a");
-	if(m_file == NULL)
+    Common::CheckFileExists(m_filename.c_str(), true);
+    m_hFile = IO::fopen(m_filename.c_str(), IO::IO_RDWR);
+	if(m_hFile == INVALID_HANDLE_VALUE)
     {
-        Log.Error(__FUNCTION__, "Cannot create log file on path: %s\n Log to file is disabled.", sFilePath.c_str());
+        Log.Error(__FUNCTION__, "Cannot create log file on path: %s. Log to file is disabled.", m_filename.c_str());
     }
 }
 
 FileLog::~FileLog()
 {
-	fflush(m_file);
-	fclose(m_file);
-	m_file = NULL;
+    IO::fclose(m_hFile);
+    m_hFile = INVALID_HANDLE_VALUE;
 }
 
 void FileLog::write(const char* format, ...)
 {
+    time_t t;
+    size_t l;
+    tm aTm;
 	va_list ap;
 	va_start(ap, format);
 	char out[4096];
 
-	tm aTm;
-	time_t t = time(NULL);
+	t = time(NULL);
 	localtime(&t, &aTm);
-	sprintf(out, "[%-4d-%02d-%02d %02d:%02d:%02d] ",aTm.tm_year+1900,aTm.tm_mon+1,aTm.tm_mday,aTm.tm_hour,aTm.tm_min,aTm.tm_sec);
-	size_t l = strlen(out);
-	vsnprintf(&out[l], sizeof(out) - l, format, ap);
-
-	fprintf(m_file, "%s\n", out);
-	fflush(m_file);
+	l = snprintf(out, sizeof(out), "[%-4d-%02d-%02d %02d:%02d:%02d] ", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec);
+	l += vsnprintf(&out[l], sizeof(out) - l, format, ap);
+    l += snprintf(&out[l], sizeof(out) - l, "\n");
+    
+    //write to end
+    IO::fseek(m_hFile, 0, SEEK_END);
+    IO::fwrite(&out, l, m_hFile);
 
 	va_end(ap);
 }
+
+void FileLog::getLogFileContent(ByteBuffer &rContent)
+{
+    int64 fileSize;
+    
+    IO::fseek(m_hFile, 0, SEEK_END);
+    fileSize = IO::ftell(m_hFile);
+    IO::fseek(m_hFile, 0, SEEK_SET);
+    
+    rContent.resize(fileSize);
+    IO::fread((void*)rContent.contents(), rContent.size(), m_hFile);
+}
+
+
+
+
+
+
+

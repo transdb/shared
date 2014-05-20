@@ -65,7 +65,7 @@ void GeewaPacket::AddHTTPData(char *pData, size_t dataSize)
                 memcpy(pChunk, pTmp, diff);
                 pChunk[diff] = '\0';
                 //convert to number
-                chunkSize = hex2number(pChunk);
+                chunkSize = Common::hex2number(pChunk);
                 if(chunkSize == 0)
                     break;
                 

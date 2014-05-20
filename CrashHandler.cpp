@@ -23,7 +23,7 @@
 
 void OutputCrashLogLine(const char * format, ...)
 {
-    std::string s = FormatOutputString("logs", "CrashLog", false);
+    std::string s = Common::FormatOutputString("logs", "CrashLog", false);
     FILE * m_file;
 	m_file = fopen(s.c_str(), "a");
     if(!m_file) 

@@ -20,81 +20,43 @@
 #ifndef COMMONFUNCTIONS_H
 #define COMMONFUNCTIONS_H
 
-vector<string> StrSplit(const string & src, const string & sep);
+#include "Defines.h"
+#include "Packets/ByteBuffer.h"
+#include "zlib/zlib.h"
 
-void replace(std::string &str, const char* find, const char* rep, uint32 limit = 0);
-
-string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp);
-
-inline bool isWhiteSpace(const unsigned char c) 
+class Common
 {
-    return ::isspace(c) != 0;
-}
-
-inline bool isNewline(const unsigned char c) 
-{
-    return (c == '\n') || (c == '\r');
-}
-
-inline bool isDigit(const unsigned char c) 
-{
-    return ::isdigit(c) != 0;
-}
-
-inline bool isLetter(const unsigned char c) 
-{
-    return ::isalpha(c) != 0;
-}
-
-inline bool isSlash(const char c) 
-{
-    return (c == '\\') || (c == '/');
-}
-
-inline bool isQuote(const char c) 
-{
-    return (c == '\'') || (c == '\"');
-}
-
-inline uint32 hex2number(const char *pHexNumber)
-{
-    uint32 ret;
-    stringstream ss;
-    ss << std::hex << pHexNumber;
-    ss >> ret;
-    return ret;
-}
-
-/// Fastest Method of float2int32
-static inline int float2int32(const float value)
-{
-#if !defined(X64) && defined(WIN32)
-	int i;
-	__asm {
-		fld value
-		frndint
-		fistp i
-	}
-	return i;
-#else
-	union { int asInt[2]; double asDouble; } n;
-	n.asDouble = value + 6755399441055744.0;
-
-#if USING_BIG_ENDIAN
-	return n.asInt [1];
-#else
-	return n.asInt [0];
-#endif
-#endif
-}
-
-inline static unsigned int MakeIP(const char * str)
-{
-    // convert the input IP address to an integer
-    unsigned int address = inet_addr(str);
-	return address;
-}
-
-void SetThreadName(const char* format, ...);
+public:
+	static int decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut);
+	static int compressGzip(const int &compressionLevel, const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut);
+    static INLINE bool isGziped(const uint8 *pData)
+    {
+        return (pData[0] == 0x1f) && (pData[1] == 0x8b);
+    }
+    
+    static bool CheckFileExists(const char *pFileName, bool oCreate);
+    static time_t GetLastFileModificationTime(const char *pFilePath);
+    
+    static std::vector<string> StrSplit(const std::string & src, const std::string & sep);
+    static void replace(std::string &str, const char* find, const char* rep, uint32 limit = 0);
+    static std::string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp);
+    static void SetThreadName(const char* format, ...);
+    
+    static INLINE uint32 hex2number(const char *pHexNumber)
+    {
+        uint32 ret;
+        stringstream ss;
+        ss << std::hex << pHexNumber;
+        ss >> ret;
+        return ret;
+    }
+    
+    inline INLINE unsigned int MakeIP(const char * str)
+    {
+        // convert the input IP address to an integer
+        unsigned int address = inet_addr(str);
+        return address;
+    }
+};
 
 #endif

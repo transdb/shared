@@ -20,6 +20,8 @@
 #define LOG_H
 
 #include "../Threading/Threading.h"
+#include "../Packets/ByteBuffer.h"
+#include "../IO/IO.h"
 
 #ifdef WIN32
 	#define TRED FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -40,7 +42,7 @@
 class FileLog
 {
 private:
-	FILE *          m_file;
+	HANDLE          m_hFile;
     std::string     m_filename;
     
 public:
@@ -48,10 +50,11 @@ public:
 	~FileLog();
     
 	void write(const char* format, ...);
+    void getLogFileContent(ByteBuffer &rContent);
     
  	INLINE bool IsOpen()
     {
-        return (m_file != NULL);
+        return (m_hFile != INVALID_HANDLE_VALUE);
     }
     
     INLINE std::string &GetFileName()
@@ -79,13 +82,13 @@ public:
         m_log_level = logLevel;
     }
     
-    INLINE std::string GetFileLogFileName()
+    INLINE void GetFileLogContent(ByteBuffer &rContent)
     {
         std::lock_guard<std::mutex> rGuard(m_lock);
         if(m_pFileLog && m_pFileLog->IsOpen())
-            return m_pFileLog->GetFileName();
-        else
-            return std::string();
+        {
+            m_pFileLog->getLogFileContent(rContent);
+        }
     }
     
 private:
