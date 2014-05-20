@@ -60,23 +60,20 @@ enum SocketIOEvent : size_t
 	NUM_SOCKET_IO_EVENTS			= 3,
 };
 
-class OverlappedStruct
+struct OverlappedStruct
 {
-public:
-	OVERLAPPED		m_overlap;
-	size_t			m_event;
-	volatile long	m_inUse;
+	OVERLAPPED          m_overlap;
+	size_t              m_event;
+    std::atomic<bool>   m_inUse;
 
-	OverlappedStruct(SocketIOEvent ev) : m_event(ev)
+	explicit OverlappedStruct() : m_event(0), m_inUse(false)
 	{
 		memset(&m_overlap, 0, sizeof(OVERLAPPED));
-		m_inUse = 0;
 	}
-
-	OverlappedStruct() : m_event(0)
+    
+	explicit OverlappedStruct(SocketIOEvent ev) : m_event(ev), m_inUse(false)
 	{
 		memset(&m_overlap, 0, sizeof(OVERLAPPED));
-		m_inUse = 0;
 	}
 
 	void Reset(SocketIOEvent ev)
@@ -87,14 +84,17 @@ public:
 
 	void Mark()
 	{
-		long val = InterlockedCompareExchange(&m_inUse, 1, 0);
-		if(val != 0)
-			printf("!!!! Network: Detected double use of read/write event! Previous event was %u.\n", (uint32)m_event);
+        if(m_inUse)
+        {
+            Log.Error(__FUNCTION_, "!!!! Network: Detected double use of read/write event! Previous event was %u.", (uint32)m_event);
+        }
+        
+        m_inUse = true;
 	}
 
 	void Unmark()
 	{
-		InterlockedExchange(&m_inUse, 0);
+		m_inUse = false;
 	}
 };
 

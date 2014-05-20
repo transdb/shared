@@ -127,9 +127,6 @@ void Socket::_OnConnect()
 /* This is called when the socket engine gets an event on the socket */
 void Socket::ReadCallback(size_t len)
 {
-	//lock
-	std::lock_guard<std::mutex> rGuard(m_readMutex);
-	
 	/* Any other platform, we have to call recv() to actually get the data. */
 	size_t space = m_readBuffer.GetSpace();
 	int bytes = recv(m_fd, m_readBuffer.GetBuffer(), space, 0);

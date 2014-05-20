@@ -101,11 +101,14 @@ protected:
   
 	SOCKET              m_fd;
 
+	/** Read (inbound)/Write (outbound) buffer
+	 */
 	CircularBuffer      m_readBuffer;
 	CircularBuffer      m_writeBuffer;
 
-	std::mutex          m_writeMutex;
-	std::mutex          m_readMutex;
+	/** Socket's write buffer protection
+	 */
+    std::mutex          m_writeMutex;
 
 	// we are connected? stop from posting events.
     std::atomic<bool>   m_connected;
