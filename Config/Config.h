@@ -24,24 +24,24 @@
 
 struct ConfigSetting
 {
-	string  AsString;
-	int     AsInt;
-	float   AsFloat;
-	bool    AsBool;
+    explicit ConfigSetting() : AsInt(0), AsFloat(0.0f), AsBool(false)
+    {
+        
+    }
+    
+    std::string AsString;
+	int         AsInt;
+	float       AsFloat;
+	bool        AsBool;
 };
 
-//to fix this http://msdn.microsoft.com/en-us/library/074af4b6(v=vs.80).aspx
-struct ConfigBlock2
-{
-	unordered_map<string, ConfigSetting>    ConfigBlock;
-};
-
-typedef unordered_map<string, ConfigBlock2>      ConfigSettings;
+typedef	std::map<string, ConfigSetting>    ConfigBlock;
+typedef std::map<string, ConfigBlock>      ConfigSettings;
 
 class ConfigFile
 {
 public:
-	ConfigFile();
+	explicit ConfigFile();
 	~ConfigFile();
 
 	bool SetSource(const char *file);
@@ -63,11 +63,6 @@ public:
 	float GetFloatDefault(const char * block, const char* name, const float def);
 	float GetFloatVA(const char * block, float def, const char* name, ...);
 
-    INLINE ConfigSettings &GetConfigMap()
-    {
-        return m_settings;
-    }
-    
 private:
 	ConfigSettings    m_settings;
 };

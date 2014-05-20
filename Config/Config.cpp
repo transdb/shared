@@ -135,7 +135,7 @@ bool ConfigFile::SetSource(const char *file)
 		string current_setting = "";
 		string current_variable = "";
 		string current_block = "";
-		ConfigBlock2 current_block_map;
+		ConfigBlock current_block_map;
 		ConfigSetting current_setting_struct;
 
 		for(;;)
@@ -207,7 +207,7 @@ parse:
 					apply_setting(current_setting, current_setting_struct);
 
 					/* the setting is done, append it to the current block. */
-                    current_block_map.ConfigBlock.insert(make_pair(current_variable, current_setting_struct));
+                    current_block_map.insert(make_pair(current_variable, current_setting_struct));
                     
 #ifdef _CONFIG_DEBUG
 					printf("Block: '%s', Setting: '%s', Value: '%s'\n", current_block.c_str(), current_variable.c_str(), current_setting_struct.AsString.c_str());
@@ -259,7 +259,7 @@ parse:
 						apply_setting(current_setting, current_setting_struct);
 
 						/* the setting is done, append it to the current block. */
-                        current_block_map.ConfigBlock.insert(make_pair(current_variable, current_setting_struct));
+                        current_block_map.insert(make_pair(current_variable, current_setting_struct));
 
 #ifdef _CONFIG_DEBUG
 						printf("Block: '%s', Setting: '%s', Value: '%s'\n", current_block.c_str(), current_variable.c_str(), current_setting_struct.AsString.c_str());
@@ -297,7 +297,7 @@ parse:
                     m_settings.insert(ConfigSettings::value_type(current_block, current_block_map));
 
 					/* erase all data for this so it doesn't seep through */
-					current_block_map.ConfigBlock.clear();
+					current_block_map.clear();
 					current_setting = "";
 					current_variable = "";
 					current_block = "";
@@ -369,8 +369,8 @@ ConfigSetting * ConfigFile::GetSetting(const char * Block, const char * Setting)
     ConfigSettings::iterator itr = m_settings.find(Block);
 	if(itr != m_settings.end())
 	{
-		unordered_map<string, ConfigSetting>::iterator it2 = itr->second.ConfigBlock.find(Setting);
-		if(it2 != itr->second.ConfigBlock.end())
+		ConfigBlock::iterator it2 = itr->second.find(Setting);
+		if(it2 != itr->second.end())
 			return &it2->second;
         else
             return NULL;
