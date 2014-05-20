@@ -82,6 +82,9 @@ namespace SocketEnums
         
         C_MSG_WRITE_DATA_NUM                = 23,
         S_MSG_WRITE_DATA_NUM                = 24,
+        
+        C_MSG_READ_LOG                      = 25,
+        S_MSG_READ_LOG                      = 26,
 
 		OP_NUM
 	};

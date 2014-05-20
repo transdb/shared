@@ -30,7 +30,7 @@ public:
 
 	virtual ~ThreadContext()
 	{
-        SetThreadName("");
+        Common::SetThreadName("");
 	}
 
 	virtual bool run() = 0;
