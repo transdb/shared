@@ -23,14 +23,14 @@
 class ThreadContext
 {
 public:
-	ThreadContext() : m_threadRunning(true), m_suspendSelf(false)
+	explicit ThreadContext() : m_threadRunning(true), m_suspendSelf(false)
 	{
 
 	}
 
 	virtual ~ThreadContext()
 	{
-        Common::SetThreadName("");
+        CommonFunctions::SetThreadName("");
 	}
 
 	virtual bool run() = 0;

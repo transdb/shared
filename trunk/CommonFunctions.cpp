@@ -22,7 +22,7 @@
 #define GZIP_ENCODING				16
 #define ZLIB_CHUNK                  16384
 
-int Common::decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
 {
     int ret;
     size_t processed;
@@ -73,7 +73,7 @@ int Common::decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-int Common::compressGzip(const int &compressionLevel, const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::compressGzip(const int &compressionLevel, const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
 {
     int ret;
     uint32 processed;
@@ -123,7 +123,7 @@ int Common::compressGzip(const int &compressionLevel, const uint8 *pData, const 
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-bool Common::CheckFileExists(const char *pFileName, bool oCreate)
+bool CommonFunctions::CheckFileExists(const char *pFileName, bool oCreate)
 {
 	bool oReturnVal = true;
 	FILE * rFile;
@@ -143,7 +143,7 @@ bool Common::CheckFileExists(const char *pFileName, bool oCreate)
 	return oReturnVal;
 }
 
-time_t Common::GetLastFileModificationTime(const char *pFilePath)
+time_t CommonFunctions::GetLastFileModificationTime(const char *pFilePath)
 {
 #ifdef WIN32
 	struct _stat rStat;
@@ -161,7 +161,7 @@ time_t Common::GetLastFileModificationTime(const char *pFilePath)
 }
 
 
-std::vector<string> Common::StrSplit(const std::string & src, const std::string & sep)
+std::vector<string> CommonFunctions::StrSplit(const std::string & src, const std::string & sep)
 {
 	std::vector<std::string>	tokens;
 	std::string					item;
@@ -175,7 +175,7 @@ std::vector<string> Common::StrSplit(const std::string & src, const std::string 
 	return tokens;
 }
 
-void Common::replace(std::string &str, const char* find, const char* rep, uint32 limit)
+void CommonFunctions::replace(std::string &str, const char* find, const char* rep, uint32 limit)
 {
 	uint32 i = 0;
 	std::string::size_type pos = 0;
@@ -191,7 +191,7 @@ void Common::replace(std::string &str, const char* find, const char* rep, uint32
 	}
 }
 
-std::string Common::FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
+std::string CommonFunctions::FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
 {
 	char p[MAX_PATH];
 	memset(&p, 0, sizeof(p));
@@ -213,7 +213,7 @@ std::string Common::FormatOutputString(const char * Prefix, const char * Descrip
 	return string(p);
 }
 
-void Common::SetThreadName(const char* format, ...)
+void CommonFunctions::SetThreadName(const char* format, ...)
 {
 	// This isn't supported on nix?
 	va_list ap;

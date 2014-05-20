@@ -453,7 +453,7 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
 
 FileLog::FileLog(const std::string &sFilePath) : m_hFile(INVALID_HANDLE_VALUE), m_filename(sFilePath)
 {
-    Common::CheckFileExists(m_filename.c_str(), true);
+    CommonFunctions::CheckFileExists(m_filename.c_str(), true);
     m_hFile = IO::fopen(m_filename.c_str(), IO::IO_RDWR);
 	if(m_hFile == INVALID_HANDLE_VALUE)
     {
