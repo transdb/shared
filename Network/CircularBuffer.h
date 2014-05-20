@@ -23,6 +23,7 @@
 
 class CircularBuffer
 {
+private:
 	// allocated whole block pointer
 	uint8 * m_buffer;
 	uint8 * m_bufferEnd;
@@ -37,22 +38,22 @@ class CircularBuffer
 	size_t m_regionBSize;
 
 	// pointer magic!
-	INLINE size_t GetAFreeSpace()       { return (m_bufferEnd - m_regionAPointer - m_regionASize); }
-	INLINE size_t GetSpaceBeforeA()     { return (m_regionAPointer - m_buffer); }
-	INLINE size_t GetSpaceAfterA()      { return (m_bufferEnd - m_regionAPointer - m_regionASize); }
-	INLINE size_t GetBFreeSpace()
+	INLINE size_t GetAFreeSpace() const      { return (m_bufferEnd - m_regionAPointer - m_regionASize); }
+	INLINE size_t GetSpaceBeforeA() const    { return (m_regionAPointer - m_buffer); }
+	INLINE size_t GetSpaceAfterA() const     { return (m_bufferEnd - m_regionAPointer - m_regionASize); }
+	INLINE size_t GetBFreeSpace() const
 	{ 
 		if(m_regionBPointer == NULL) 
 			return 0; 
-
-		return (m_regionAPointer - m_regionBPointer - m_regionBSize); 
+        else
+            return (m_regionAPointer - m_regionBPointer - m_regionBSize);
 	}
 
 public:
 
 	/** Constructor
 	*/
-	CircularBuffer(size_t size);
+	explicit CircularBuffer(size_t size);
 
 	/** Destructor
 	*/
@@ -83,14 +84,14 @@ public:
 
 	/** Returns the number of bytes currently stored in the buffer.
 	*/
-	INLINE size_t GetSize()
+	INLINE size_t GetSize() const
     {
         return m_regionASize + m_regionBSize;
     }
 
 	/** Returns the number of contiguous bytes (that can be pushed out in one operation)
 	*/
-	INLINE size_t GetContiguiousBytes()
+	INLINE size_t GetContiguiousBytes() const
 	{
 		if(m_regionASize)			// A before B
 			return m_regionASize;
@@ -105,7 +106,7 @@ public:
 
 	/** Returns a pointer at the "end" of the buffer, where new data can be written
 	*/
-	INLINE void * GetBuffer()
+	INLINE void * GetBuffer() const
 	{
 		if(m_regionBPointer != NULL)
 			return m_regionBPointer + m_regionBSize;
@@ -126,7 +127,7 @@ public:
 
 	/** Returns a pointer at the "beginning" of the buffer, where data can be pulled from
 	*/
-	INLINE void * GetBufferStart()
+	INLINE void * GetBufferStart() const
 	{
 		if(m_regionASize > 0)
 			return m_regionAPointer;

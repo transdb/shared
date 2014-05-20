@@ -111,7 +111,7 @@ public:
 	void DecSendLock() {}
 	bool AcquireSendLock()								{ return false; }
 	bool IsOpen() 										{ return m_connected; }	
-	bool Writable() 									{ return false; }
+	bool Writable() const                               { return false; }
 	void Delete()										{ Close(); }
 	void Disconnect()									{ Close(); }
     
@@ -139,7 +139,7 @@ public:
     
 	/** Returns the socket's file descriptor
 	 */
-	SOCKET GetFd()              { return m_fd; }
+	SOCKET GetFd() const        { return m_fd; }
     void SetFd(SOCKET fd)       { m_fd = fd; }
     
 private:

@@ -32,6 +32,11 @@ public:
 	// Destructor.
 	virtual ~Socket();
 
+	/** Returns the socket's file descriptor
+     */
+	SOCKET GetFd() const        { return m_fd; }
+	void SetFd(SOCKET fd)       { m_fd = fd; }
+    
 	// Open a connection to another machine.
 	bool Connect(const char * Address, uint32 Port, uint32 timeout);
 
@@ -73,8 +78,6 @@ public:
 
 	// Get the client's ip in numerical form.
 	string GetRemoteIP();
-	uint32 GetRemotePort()	{ return ntohs(m_client.sin_port); }
-	SOCKET GetFd()			{ return m_fd; }
 	
 /* Platform-specific methods */
 
@@ -85,14 +88,11 @@ public:
 	bool IsDeleted() const				{ return m_deleted; }
 	bool IsConnected() const			{ return m_connected; }
     
-	sockaddr_in & GetRemoteStruct()		{ return m_client; }
 	CircularBuffer& GetReadBuffer()		{ return m_readBuffer; }
 	CircularBuffer& GetWriteBuffer()	{ return m_writeBuffer; }
 
 /* Deletion */
 	void Delete();
-
-	in_addr GetRemoteAddress() const	{ return m_client.sin_addr; }
 
 protected:
 
