@@ -60,12 +60,12 @@ public:
     
     static INLINE bool isDigit(const unsigned char c)
     {
-        return isdigit(c) != 0;
+        return ::isdigit(c) != 0;
     }
     
     static INLINE bool isWhiteSpace(const unsigned char c)
     {
-        return isspace(c) != 0;
+        return ::isspace(c) != 0;
     }
     
 };
