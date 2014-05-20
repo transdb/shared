@@ -173,7 +173,7 @@ void echo(const char * format, ...)
 	va_list ap;
 	va_start(ap, format);
 	vprintf_s(format, ap);
-	std::string s = FormatOutputString("logs", "CrashLog", false);
+	std::string s = CommonFunctions::FormatOutputString("logs", "CrashLog", false);
 	FILE * m_file;
 	fopen_s(&m_file, s.c_str(), "a");
 	if(!m_file)
@@ -244,7 +244,7 @@ void CStackWalker::OnCallstackEntry(CallstackEntryType eType, CallstackEntry &en
 
 void CStackWalker::OnOutput(LPCSTR szText)
 {
-	std::string s = FormatOutputString("logs", "CrashLog", false);
+	std::string s = CommonFunctions::FormatOutputString("logs", "CrashLog", false);
 	FILE * m_file;
 	fopen_s(&m_file, s.c_str(), "a");
 	if(!m_file) 
