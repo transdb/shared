@@ -24,7 +24,7 @@
 #include "Packets/ByteBuffer.h"
 #include "zlib/zlib.h"
 
-class Common
+class CommonFunctions
 {
 public:
 	static int decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut);
@@ -51,12 +51,23 @@ public:
         return ret;
     }
     
-    inline INLINE unsigned int MakeIP(const char * str)
+    static INLINE unsigned int MakeIP(const char * str)
     {
         // convert the input IP address to an integer
         unsigned int address = inet_addr(str);
         return address;
     }
+    
+    static INLINE bool isDigit(const unsigned char c)
+    {
+        return isdigit(c) != 0;
+    }
+    
+    static INLINE bool isWhiteSpace(const unsigned char c)
+    {
+        return isspace(c) != 0;
+    }
+    
 };
 
 #endif
