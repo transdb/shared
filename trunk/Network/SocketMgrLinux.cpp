@@ -110,6 +110,8 @@ SocketWorkerThread::~SocketWorkerThread()
 
 bool SocketWorkerThread::run()
 {
+    CommonFunctions::SetThreadName("SocketWorker thread");    
+    //
 	int i;
     int fd_count;
     Socket * pSocket;

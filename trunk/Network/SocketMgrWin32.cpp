@@ -44,6 +44,8 @@ void SocketMgr::SpawnWorkerThreads()
 
 bool SocketWorkerThread::run()
 {
+    CommonFunctions::SetThreadName("SocketWorker thread");
+    //
 	HANDLE cp = sSocketMgr.GetCompletionPort();
 	DWORD len;
 	Socket * s;
