@@ -28,12 +28,12 @@ class BaseSocket
 public:
 	/** Returns the socket's file descriptor
 	 */
-	virtual SOCKET GetFd() = 0;
+	virtual SOCKET GetFd() const = 0;
     virtual void SetFd(SOCKET fd) = 0;
 
 	/** Is this socket in a read state? Or a write state?
 	 */
-	virtual bool Writable() = 0;
+	virtual bool Writable() const = 0;
 
 	/** Virtual ReadCallback() callback
 	 */

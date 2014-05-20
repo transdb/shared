@@ -143,7 +143,7 @@ size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, cons
 #else
     ssize_t lpNumberOfBytesWritten;
     lpNumberOfBytesWritten = ::write(hFile, pBuffer, nNumberOfBytesToWrite);
-    assert(lpNumberOfBytesWritten == nNumberOfBytesToWrite);
+    assert(lpNumberOfBytesWritten == (ssize_t)nNumberOfBytesToWrite);
 #endif
     return lpNumberOfBytesWritten;
 }
@@ -157,7 +157,7 @@ size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE
 #else
     ssize_t lpNumberOfBytesRead;
     lpNumberOfBytesRead = ::read(hFile, pBuffer, nNumberOfBytesToRead);
-    assert(lpNumberOfBytesRead == nNumberOfBytesToRead);
+    assert(lpNumberOfBytesRead == (ssize_t)nNumberOfBytesToRead);
 #endif
     return lpNumberOfBytesRead;
 }

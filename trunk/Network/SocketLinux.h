@@ -40,7 +40,7 @@ public:
     
 	/** Returns the socket's file descriptor
 	 */
-	SOCKET GetFd()              { return m_fd; }
+	SOCKET GetFd() const        { return m_fd; }
 	void SetFd(SOCKET fd)       { m_fd = fd; }
 
 	/** Open a connection to another machine.
@@ -89,7 +89,7 @@ public:
 
 	/** Are we writable?
 	 */
-	bool Writable();
+	bool Writable() const;
 
 	/** Occurs on error
 	 */

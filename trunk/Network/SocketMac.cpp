@@ -225,7 +225,7 @@ void Socket::OnError(int errcode)
 	Disconnect();
 }
 
-bool Socket::Writable()
+bool Socket::Writable() const
 {
 	return (m_writeBuffer.GetSize() > 0) ? true : false;
 }
