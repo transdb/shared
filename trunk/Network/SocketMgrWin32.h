@@ -24,7 +24,7 @@
 
 class Socket;
 
-typedef unordered_set<Socket*> SocketSet;
+typedef std::set<Socket*> SocketSet;
 
 class SocketMgr : public Singleton<SocketMgr>
 {
