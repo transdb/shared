@@ -150,11 +150,6 @@ void Socket::Delete()
 
 void Socket::WriteCallback()
 {
-	if(m_deleted || !m_connected)
-		return;
-
-	// We don't want any writes going on while this is happening.
-	std::lock_guard<std::mutex> rGuard(m_writeMutex);
 	if(m_writeBuffer.GetContiguiousBytes())
 	{
 		DWORD w_length = 0;
@@ -189,10 +184,6 @@ void Socket::WriteCallback()
 
 void Socket::SetupReadEvent()
 {
-	if(m_deleted || !m_connected)
-		return;
-
-	std::lock_guard<std::mutex> rGuard(m_readMutex);
 	DWORD r_length = 0;
 	DWORD flags = 0;
 	WSABUF buf;
