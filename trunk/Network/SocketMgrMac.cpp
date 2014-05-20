@@ -149,7 +149,7 @@ bool SocketWorkerThread::run()
             pSocket = static_cast<Socket*>(m_pEvents[i].udata);
             if(pSocket == NULL)
             {
-                printf("kevent returned invalid fd %lu\n", m_pEvents[i].ident);
+                Log.Error(__FUNCTION__, "kevent returned invalid fd:%lu", m_pEvents[i].ident);
                 continue;
             }
             
