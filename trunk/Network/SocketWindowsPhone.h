@@ -156,10 +156,9 @@ protected:
 	CircularBuffer		m_readBuffer;
 	CircularBuffer		m_writeBuffer;
 
-	/** Socket's read/write buffer protection
+	/** Socket's write buffer protection
 	*/
 	std::mutex 			m_writeMutex;
-	std::mutex 			m_readMutex;
 
 	/** Write lock, stops multiple write events from being posted.
 	*/
