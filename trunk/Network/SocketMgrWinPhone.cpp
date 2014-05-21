@@ -158,7 +158,7 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 
 bool SocketWorkerThread::run()
 {
-	SetThreadName("SocketWorker thread");
+	CommonFunctions::SetThreadName("SocketWorker thread");
 	sSocketMgr.thread_func(this);
 	return true;
 }
