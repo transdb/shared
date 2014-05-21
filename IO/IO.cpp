@@ -10,7 +10,7 @@
 
 HANDLE IO::ftrans()
 {
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
     HANDLE hTransaction = CreateTransaction(NULL, 0, 0, 0, 0, 0, NULL);
     return hTransaction;
 #else
@@ -21,7 +21,7 @@ HANDLE IO::ftrans()
 HANDLE IO::fopentrans(const char *pPath, const ACCESS &eAccess, const HANDLE &hTransaction)
 {
     HANDLE hHandle;
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
     USHORT view = 0xFFFE; // TXFS_MINIVERSION_DEFAULT_VIEW
     DWORD dwDesiredAccess;
     DWORD dwFlagsAndAttributes;
@@ -49,21 +49,21 @@ HANDLE IO::fopentrans(const char *pPath, const ACCESS &eAccess, const HANDLE &hT
 
 void IO::fcommittrans(const HANDLE &hTransaction)
 {
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
     CommitTransaction(hTransaction);
 #endif
 }
 
 void IO::frollbacktrans(const HANDLE &hTransaction)
 {
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
     RollbackTransaction(hTransaction);
 #endif
 }
 
 void IO::fclosetrans(const HANDLE &hTransaction)
 {
-#ifdef WIN32
+#if defined(WIN32) && !defined(WP8)
     CloseHandle(hTransaction);
 #endif
 }
@@ -89,7 +89,13 @@ HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess)
             dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
             break;
     }
+#if defined(WIN32) && !defined(WP8)
     hHandle = CreateFile(pPath, dwDesiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, dwFlagsAndAttributes, NULL);
+#else
+	wchar_t awPath[MAX_PATH] = { 0 };
+	MultiByteToWideChar(CP_UTF8, 0, pPath, -1, awPath, sizeof(awPath));
+	hHandle = CreateFile2(awPath, dwDesiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, OPEN_EXISTING, NULL);
+#endif
 #else
     switch(eAccess)
     {
