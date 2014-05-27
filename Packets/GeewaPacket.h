@@ -12,7 +12,7 @@
 #include "../Defines.h"
 #include "ByteBuffer.h"
 
-typedef std::map<string, string> HeaderMap;
+typedef std::map<std::string, std::string> HeaderMap;
 
 class GeewaPacket
 {
@@ -39,7 +39,7 @@ private:
     void ParseHTTPHeader(char *pHeader);
     
     //declarations
-    string      m_header;
+    std::string m_header;
     size_t      m_allDataCounter;
     ByteBuffer  m_data;
     uint32      m_contentLenght;

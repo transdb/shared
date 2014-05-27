@@ -161,7 +161,7 @@ time_t CommonFunctions::GetLastFileModificationTime(const char *pFilePath)
 }
 
 
-std::vector<string> CommonFunctions::StrSplit(const std::string & src, const std::string & sep)
+std::vector<std::string> CommonFunctions::StrSplit(const std::string & src, const std::string & sep)
 {
 	std::vector<std::string>	tokens;
 	std::string					item;
@@ -210,7 +210,7 @@ std::string CommonFunctions::FormatOutputString(const char * Prefix, const char 
 	}
 
 	strcat(p, ".log");
-	return string(p);
+	return std::string(p);
 }
 
 void CommonFunctions::SetThreadName(const char* format, ...)

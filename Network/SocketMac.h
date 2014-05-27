@@ -128,7 +128,7 @@ public:
 	}
     
 	// Get the client's ip in numerical form.
-	string GetRemoteIP();
+	std::string GetRemoteIP();
     
 	/** Are we connected?
      */

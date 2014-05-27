@@ -35,8 +35,8 @@ struct ConfigSetting
 	bool        AsBool;
 };
 
-typedef	std::map<string, ConfigSetting>    ConfigBlock;
-typedef std::map<string, ConfigBlock>      ConfigSettings;
+typedef	std::map<std::string, ConfigSetting>    ConfigBlock;
+typedef std::map<std::string, ConfigBlock>      ConfigSettings;
 
 class ConfigFile
 {

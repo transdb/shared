@@ -85,6 +85,9 @@ namespace SocketEnums
         
         C_MSG_READ_LOG                      = 25,
         S_MSG_READ_LOG                      = 26,
+        
+        C_MSG_READ_CONFIG                   = 27,
+        S_MSG_READ_CONFIG                   = 28,
 
 		OP_NUM
 	};

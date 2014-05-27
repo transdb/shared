@@ -34,32 +34,32 @@ ConfigFile::~ConfigFile()
 	
 }
 
-void remove_spaces(string& str)
+void remove_spaces(std::string& str)
 {
 	while(str.size() && (*str.begin() == ' ' || *str.begin() == '\t'))
 		str.erase(str.begin());
 }
 
-void remove_all_spaces(string& str)
+void remove_all_spaces(std::string& str)
 {
-	string::size_type off = str.find(" ");
-	while(off != string::npos)
+	std::string::size_type off = str.find(" ");
+	while(off != std::string::npos)
 	{
 		str.erase(off, 1);
 		off = str.find(" ");
 	}
 
 	off = str.find("\t");
-	while(off != string::npos)
+	while(off != std::string::npos)
 	{
 		str.erase(off, 1);
 		off = str.find("\t");
 	}
 }
 
-bool is_comment(string& str, bool * in_multiline_quote)
+bool is_comment(std::string& str, bool * in_multiline_quote)
 {
-	string stemp = str;
+	std::string stemp = str;
 	remove_spaces(stemp);
 	if(stemp.length() == 0)
 		return false;
@@ -86,7 +86,7 @@ bool is_comment(string& str, bool * in_multiline_quote)
 	return false;
 }
 
-void apply_setting(string & str, ConfigSetting & setting)
+void apply_setting(std::string & str, ConfigSetting & setting)
 {
 	setting.AsString = str;
 	setting.AsInt = atoi(str.c_str());
@@ -118,7 +118,7 @@ bool ConfigFile::SetSource(const char *file)
 	/* open the file */
 	if(file != 0)
 	{
-		ifstream inputData(file);
+		std::ifstream inputData(file);
 		if(!inputData.is_open())
 		{
 			Log.Debug(__FUNCTION__, "Could not open %s.", file);
@@ -126,15 +126,15 @@ bool ConfigFile::SetSource(const char *file)
 		}
 
 		/* let's parse it. */
-		string line;
-		string::size_type end;
-		string::size_type offset;
+		std::string line;
+		std::string::size_type end;
+		std::string::size_type offset;
 		bool in_multiline_comment = false;
 		bool in_multiline_quote = false;
 		bool in_block = false;
-		string current_setting = "";
-		string current_variable = "";
-		string current_block = "";
+		std::string current_setting = "";
+		std::string current_variable = "";
+		std::string current_block = "";
 		ConfigBlock current_block_map;
 		ConfigSetting current_setting_struct;
 
@@ -168,7 +168,7 @@ parse:
 				offset = line.find("*/", 0);
 				
 				/* skip this entire line, eh? */
-				if(offset == string::npos)
+				if(offset == std::string::npos)
 					continue;
 
 				/* remove up to the end of the comment block. */
@@ -184,7 +184,7 @@ parse:
 					/* attempt to find the end of the quote block. */
 					offset = line.find("\"");
 
-					if(offset == string::npos)
+					if(offset == std::string::npos)
 					{
 						/* append the whole line to the quote. */
 						current_setting += line;
@@ -226,7 +226,7 @@ parse:
 
 				/* our target is a *setting*. look for an '=' sign, this is our seperator. */
                 offset = line.find("=");
-				if(offset != string::npos)
+				if(offset != std::string::npos)
 				{
 					assert(current_variable == "");
 					current_variable = line.substr(0, offset);
@@ -240,14 +240,14 @@ parse:
 
 				/* look for the opening quote. this signifies the start of a setting. */
 				offset = line.find("\"");
-				if(offset != string::npos)
+				if(offset != std::string::npos)
 				{
 					assert(current_setting == "");
 					assert(current_variable != "");
 
 					/* try and find the ending quote */
 					end = line.find("\"", offset + 1);
-					if(end != string::npos)
+					if(end != std::string::npos)
 					{
 						/* the closing quote is on the same line, oh goody. */
 						current_setting = line.substr(offset+1, end-offset-1);
@@ -286,7 +286,7 @@ parse:
 
 				/* are we at the end of the block yet? */
 				offset = line.find(">");
-				if(offset != string::npos)
+				if(offset != std::string::npos)
 				{
 					line.erase(0, offset+1);
 
@@ -308,7 +308,7 @@ parse:
 				/* we're not in a block. look for the start of one. */
 				offset = line.find("<");
 
-				if(offset != string::npos)
+				if(offset != std::string::npos)
 				{
 					in_block = true;
 
@@ -317,7 +317,7 @@ parse:
 
 					/* find the name of the block first, though. */
 					offset = line.find(" ");
-					if(offset != string::npos)
+					if(offset != std::string::npos)
 					{
 						current_block = line.substr(0, offset);
 						line.erase(0, offset + 1);
@@ -391,7 +391,7 @@ bool ConfigFile::GetString(const char * block, const char* name, std::string *va
 
 std::string ConfigFile::GetStringDefault(const char * block, const char* name, const char* def)
 {
-	string ret;
+	std::string ret;
 	return GetString(block, name, &ret) ? ret : def;
 }
 
@@ -480,7 +480,7 @@ std::string ConfigFile::GetStringVA(const char * block, const char* def, const c
 
 bool ConfigFile::GetString(const char * block, char * buffer, const char * name, const char * def, size_t len)
 {
-	string val = GetStringDefault(block, name, def);
+	std::string val = GetStringDefault(block, name, def);
 	size_t blen = val.length();
 	if(blen > len)
 		blen = len;
