@@ -77,7 +77,7 @@ public:
 /* Client Operations */
 
 	// Get the client's ip in numerical form.
-	string GetRemoteIP();
+	std::string GetRemoteIP();
 	
 /* Platform-specific methods */
 
