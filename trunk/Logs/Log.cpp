@@ -483,7 +483,7 @@ void FileLog::write(const char* format, ...)
     l += snprintf(&out[l], sizeof(out) - l, "\n");
     
     //write to end
-    IO::fseek(m_hFile, 0, SEEK_END);
+    IO::fseek(m_hFile, 0, IO::IO_SEEK_END);
     IO::fwrite(&out, l, m_hFile);
 
 	va_end(ap);
@@ -493,9 +493,9 @@ void FileLog::getLogFileContent(ByteBuffer &rContent)
 {
     int64 fileSize;
     
-    IO::fseek(m_hFile, 0, SEEK_END);
+    IO::fseek(m_hFile, 0, IO::IO_SEEK_END);
     fileSize = IO::ftell(m_hFile);
-    IO::fseek(m_hFile, 0, SEEK_SET);
+    IO::fseek(m_hFile, 0, IO::IO_SEEK_SET);
     
     rContent.resize(fileSize);
     IO::fread((void*)rContent.contents(), rContent.size(), m_hFile);

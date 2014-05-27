@@ -21,6 +21,20 @@ public:
         IO_RDWR         = 3
     };
     
+
+    enum SEEK_POS
+    {
+#ifdef WIN32
+        IO_SEEK_SET     = FILE_BEGIN,
+        IO_SEEK_CUR     = FILE_CURRENT,
+        IO_SEEK_END     = FILE_END
+#else
+        IO_SEEK_SET     = SEEK_SET,
+        IO_SEEK_CUR     = SEEK_CUR,
+        IO_SEEK_END     = SEEK_END
+#endif
+    };
+    
     static HANDLE ftrans();
     static HANDLE fopentrans(const char *pPath, const ACCESS &eAccess, const HANDLE &hTransaction);
     static void fcommittrans(const HANDLE &hTransaction);
@@ -28,7 +42,7 @@ public:
     static void fclosetrans(const HANDLE &hTransaction);
     static HANDLE fopen(const char *pPath, const ACCESS &eAccess);
     static int64 ftell(const HANDLE &hFile);
-    static size_t fseek(const HANDLE &hFile, const int64 &offset, const int &origin);
+    static size_t fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos);
     static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile);
     static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile);
     static void fresize(const HANDLE &hFile, const int64 &newSize);

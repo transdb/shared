@@ -37,7 +37,7 @@ public:
     static bool CheckFileExists(const char *pFileName, bool oCreate);
     static time_t GetLastFileModificationTime(const char *pFilePath);
     
-    static std::vector<string> StrSplit(const std::string & src, const std::string & sep);
+    static std::vector<std::string> StrSplit(const std::string & src, const std::string & sep);
     static void replace(std::string &str, const char* find, const char* rep, uint32 limit = 0);
     static std::string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp);
     static void SetThreadName(const char* format, ...);
@@ -45,7 +45,7 @@ public:
     static INLINE uint32 hex2number(const char *pHexNumber)
     {
         uint32 ret;
-        stringstream ss;
+        std::stringstream ss;
         ss << std::hex << pHexNumber;
         ss >> ret;
         return ret;

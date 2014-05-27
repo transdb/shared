@@ -126,8 +126,9 @@ int64 IO::ftell(const HANDLE &hFile)
 #endif
 }
 
-size_t IO::fseek(const HANDLE &hFile, const int64 &offset, const int &origin)
+size_t IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos)
 {
+    int origin = static_cast<int>(eSeekPos);
 #ifdef WIN32
     LARGE_INTEGER liDistanceToMove;
     LARGE_INTEGER lpNewFilePointer;

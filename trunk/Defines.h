@@ -33,14 +33,14 @@
     #define WIN32
 #endif
 #if !defined(DEBUG) && defined(WIN32)
-    #define _SECURE_SCL 0
+//  #define _SECURE_SCL 0
 //	#define _HAS_EXCEPTIONS 0
 //	#define _CRT_DISABLE_PERFCRIT_LOCKS
 #endif
 #if defined(WIN32) && !defined(WP8)
 	#define _CRT_SECURE_NO_WARNINGS
 	#define _SCL_SECURE_NO_WARNINGS
-	#define _HAS_ITERATOR_DEBUGGING 0
+//	#define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
 #include <stdio.h>
@@ -124,15 +124,6 @@
 	typedef unsigned __int32 uint32;
 	typedef unsigned __int16 uint16;
 	typedef unsigned __int8 uint8;
-	
-	//std, tr1
-	using namespace std;
-	using std::tr1::hash;
-	using std::tr1::unordered_multimap;
-	using std::tr1::unordered_map;
-	using std::tr1::unordered_set;
-	using std::tr1::array;
-	using std::tr1::shared_ptr;
 #else
 	typedef int64_t int64;
 	typedef int32_t int32;
@@ -152,9 +143,6 @@
     typedef uint8_t     BYTE;
     typedef int32_t     INT;
     typedef int         HANDLE;
-	
-	//std
-	using namespace std;
 
 	//imports
 	#define MAX_PATH 				1024
