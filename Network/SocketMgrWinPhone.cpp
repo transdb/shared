@@ -166,7 +166,7 @@ bool SocketWorkerThread::run()
 void SocketMgr::CloseAll()
 {
 	LockingPtr<SocketSet> pSockets(m_sockets, NULL);
-	list<BaseSocket*> tokill;
+	std::list<BaseSocket*> tokill;
 
 	m_socketLock.lock();
 	for (SocketSet::iterator itr = pSockets->begin(); itr != pSockets->end(); ++itr)
@@ -175,7 +175,7 @@ void SocketMgr::CloseAll()
 	}
 	m_socketLock.unlock();
 	
-	for (list<BaseSocket*>::iterator itr = tokill.begin(); itr != tokill.end(); ++itr)
+	for (std::list<BaseSocket*>::iterator itr = tokill.begin(); itr != tokill.end(); ++itr)
 	{
 		(*itr)->Disconnect();
 	}
