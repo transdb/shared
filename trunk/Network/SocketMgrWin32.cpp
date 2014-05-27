@@ -106,7 +106,7 @@ void HandleWriteComplete(Socket * s, size_t len)
 void SocketMgr::CloseAll()
 {
 	LockingPtr<SocketSet> pSockets(m_sockets, NULL);
-	list<Socket*> tokill;
+	std::list<Socket*> tokill;
 
 	m_socketLock.lock();
 	for (SocketSet::iterator itr = pSockets->begin(); itr != pSockets->end(); ++itr)
@@ -115,7 +115,7 @@ void SocketMgr::CloseAll()
 	}
 	m_socketLock.unlock();
 	
-	for(list<Socket*>::iterator itr = tokill.begin(); itr != tokill.end(); ++itr)
+	for (std::list<Socket*>::iterator itr = tokill.begin(); itr != tokill.end(); ++itr)
 	{
 		(*itr)->Disconnect();
 	}

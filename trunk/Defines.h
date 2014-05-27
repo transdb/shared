@@ -39,7 +39,7 @@
 #endif
 #if defined(WIN32) && !defined(WP8)
 	#define _CRT_SECURE_NO_WARNINGS
-	#define _SCL_SECURE_NO_WARNINGS
+//	#define _SCL_SECURE_NO_WARNINGS
 //	#define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
