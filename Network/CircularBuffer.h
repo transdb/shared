@@ -24,6 +24,9 @@
 class CircularBuffer
 {
 private:
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(CircularBuffer);
+    
 	// allocated whole block pointer
 	uint8 * m_buffer;
 	uint8 * m_bufferEnd;

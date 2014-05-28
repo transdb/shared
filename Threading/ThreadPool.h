@@ -71,6 +71,9 @@ public:
 	}
     
 private:
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(Thread);
+    
     CThreadPool                     &m_rThreadPool;
     std::atomic<ThreadContext*>     m_pExecutionTarget;
     bool                            m_signaled;
@@ -123,6 +126,9 @@ public:
     void WakeUpThreads();
 
 private:
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(CThreadPool);
+    
 	// return true - suspend ourselves, and wait for a future task.
 	// return false - exit, we're shutting down or no longer needed.
 	bool ThreadExit(std::unique_lock<std::mutex> &rGuard, Thread * t);

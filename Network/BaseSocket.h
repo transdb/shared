@@ -92,6 +92,14 @@ public:
 	virtual void IncSendLock() = 0;
 	virtual void DecSendLock() = 0;
 	virtual bool AcquireSendLock() = 0;
+    
+protected:
+    //default ctor
+    BaseSocket() {}
+    
+private:
+	//disable copy constructor and assign
+    DISALLOW_COPY_AND_ASSIGN(BaseSocket);
 };
 
 #endif

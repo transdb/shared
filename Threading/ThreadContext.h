@@ -78,6 +78,10 @@ protected:
     std::mutex              m_rCondMutex;
 	std::atomic<bool>       m_threadRunning;
     std::atomic<bool>       m_suspendSelf;
+    
+private:
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(ThreadContext);
 };
 
 #endif
