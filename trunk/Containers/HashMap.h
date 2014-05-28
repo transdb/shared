@@ -201,8 +201,8 @@ public:
     }
     
 private:
-    //disable copy constructor
-	HashMap(const HashMap& that);
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(HashMap);
     
     //
     INLINE void getAllNodes(Vector<HashNodeT*, uint64> &rNodes)

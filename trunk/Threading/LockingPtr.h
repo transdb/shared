@@ -55,10 +55,11 @@ public:
    }
 
 private:
+	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(LockingPtr);
+    
 	T*				m_obj;
     std::mutex*		m_pMutex;
-	LockingPtr(const LockingPtr&);
-	LockingPtr& operator=(const LockingPtr&);
 };
 
 #endif
