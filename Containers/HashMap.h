@@ -67,7 +67,7 @@ public:
         return m_recordsCount;
     }
     
-    INLINE uint64 tableSizeMask()
+    INLINE uint64 tableSizeMask() const
     {
         return m_tableSizeMask;
     }
