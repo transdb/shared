@@ -211,13 +211,13 @@ bool Socket::Writable() const
 	return (m_writeBuffer.GetSize() > 0) ? true : false;
 }
 
-string Socket::GetRemoteIP()
+std::string Socket::GetRemoteIP()
 {
 	char* ip = (char*)inet_ntoa(m_peer.sin_addr);
 	if(ip != NULL)
-		return string(ip);
+		return std::string(ip);
 	else
-		return string("noip");
+		return std::string("noip");
 }
 
 void Socket::PostEvent(int events)
