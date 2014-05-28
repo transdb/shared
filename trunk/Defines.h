@@ -191,6 +191,10 @@ extern tm       g_localTime;
     #define NOINLINE __attribute__((noinline))
 #endif
 
+#define DISALLOW_COPY_AND_ASSIGN(TypeName)      \
+    TypeName(const TypeName&);                  \
+    void operator=(const TypeName&)
+
 //singleton
 #include "Singleton.h"
 
