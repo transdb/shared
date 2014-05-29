@@ -41,31 +41,31 @@ public:
     
    	/** Get pos in file
 	 */
-    static int64 ftell(const HANDLE &hFile) throw(std::runtime_error);
+	static int64 ftell(const HANDLE &hFile) _THROW1(std::runtime_error);
     
    	/** Seek in file
 	 */
-    static int64 fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos) throw(std::runtime_error);
+	static int64 fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos) _THROW1(std::runtime_error);
     
    	/** Write data to file
 	 */
-    static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile) throw(std::runtime_error);
+	static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile) _THROW1(std::runtime_error);
     
    	/** Read data from file
 	 */
-    static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile) throw(std::runtime_error);
+	static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile) _THROW1(std::runtime_error);
     
    	/** Resize file
 	 */
-    static void fresize(const HANDLE &hFile, const int64 &newSize) throw(std::runtime_error);
+	static void fresize(const HANDLE &hFile, const int64 &newSize) _THROW1(std::runtime_error);
     
    	/** Close file handle
 	 */
-    static void fclose(const HANDLE &hFile)  throw(std::runtime_error);
+	static void fclose(const HANDLE &hFile)  _THROW1(std::runtime_error);
     
    	/** Sync data to device
 	 */
-    static void fsync(const HANDLE &hFile) throw(std::runtime_error);
+	static void fsync(const HANDLE &hFile) _THROW1(std::runtime_error);
 };
 
 class IOHandleGuard

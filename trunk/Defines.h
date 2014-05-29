@@ -188,6 +188,11 @@ extern tm       g_localTime;
     #define NOINLINE __attribute__((noinline))
 #endif
 
+#ifndef WIN32
+    #define _THROW1(x)  throw(x)
+    #define _THROW0(x)  throw()
+#endif
+
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)      \
     TypeName(const TypeName&);                  \
     void operator=(const TypeName&)
