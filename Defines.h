@@ -67,9 +67,6 @@
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
 	#include <process.h>
-#ifndef WP8
-	#include <ktmw32.h>
-#endif
 #else
     #include <sys/mman.h>
 	#include <sys/time.h>

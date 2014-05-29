@@ -35,36 +35,61 @@ public:
 #endif
     };
     
-    static HANDLE ftrans();
-    static HANDLE fopentrans(const char *pPath, const ACCESS &eAccess, const HANDLE &hTransaction);
-    static void fcommittrans(const HANDLE &hTransaction);
-    static void frollbacktrans(const HANDLE &hTransaction);
-    static void fclosetrans(const HANDLE &hTransaction);
+    /** Open file
+	 */
     static HANDLE fopen(const char *pPath, const ACCESS &eAccess);
-    static int64 ftell(const HANDLE &hFile);
-    static size_t fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos);
-    static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile);
-    static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile);
-    static void fresize(const HANDLE &hFile, const int64 &newSize);
-    static void fclose(const HANDLE &hFile);
+    
+   	/** Get pos in file
+	 */
+    static int64 ftell(const HANDLE &hFile) throw(std::runtime_error);
+    
+   	/** Seek in file
+	 */
+    static int64 fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos) throw(std::runtime_error);
+    
+   	/** Write data to file
+	 */
+    static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile) throw(std::runtime_error);
+    
+   	/** Read data from file
+	 */
+    static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile) throw(std::runtime_error);
+    
+   	/** Resize file
+	 */
+    static void fresize(const HANDLE &hFile, const int64 &newSize) throw(std::runtime_error);
+    
+   	/** Close file handle
+	 */
+    static void fclose(const HANDLE &hFile)  throw(std::runtime_error);
+    
+   	/** Sync data to device
+	 */
+    static void fsync(const HANDLE &hFile) throw(std::runtime_error);
 };
 
 class IOHandleGuard
 {
 public:
-    explicit IOHandleGuard(HANDLE *pHandle) : m_pHandle(pHandle)
+    explicit IOHandleGuard(const HANDLE &hHandle) : m_rHandle(hHandle)
     {
         
     }
     
     ~IOHandleGuard()
     {
-        IO::fclose(*m_pHandle);
-        *m_pHandle = INVALID_HANDLE_VALUE;
+        if(m_rHandle != INVALID_HANDLE_VALUE)
+        {
+            IO::fclose(m_rHandle);
+        }
     }
     
 private:
-    HANDLE *m_pHandle;
+   	//disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(IOHandleGuard);
+    
+    //reference to handle
+    const HANDLE &m_rHandle;
 };
 
 #endif /* defined(__TransDB__IO__) */
