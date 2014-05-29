@@ -8,66 +8,6 @@
 
 #include "IO.h"
 
-HANDLE IO::ftrans()
-{
-#if defined(WIN32) && !defined(WP8)
-    HANDLE hTransaction = CreateTransaction(NULL, 0, 0, 0, 0, 0, NULL);
-    return hTransaction;
-#else
-    return 0;
-#endif
-}
-
-HANDLE IO::fopentrans(const char *pPath, const ACCESS &eAccess, const HANDLE &hTransaction)
-{
-    HANDLE hHandle;
-#if defined(WIN32) && !defined(WP8)
-    USHORT view = 0xFFFE; // TXFS_MINIVERSION_DEFAULT_VIEW
-    DWORD dwDesiredAccess;
-    DWORD dwFlagsAndAttributes;
-    switch(eAccess)
-    {
-        case IO_READ_ONLY:
-            dwDesiredAccess = GENERIC_READ;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_READONLY;
-            break;
-        case IO_WRITE_ONLY:
-            dwDesiredAccess = GENERIC_WRITE;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
-            break;
-        case IO_RDWR:
-            dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
-            break;
-    }
-    hHandle = CreateFileTransacted(pPath, dwDesiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, dwFlagsAndAttributes, NULL, hTransaction, &view, NULL);
-#else
-    hHandle = IO::fopen(pPath, eAccess);
-#endif
-    return hHandle;
-}
-
-void IO::fcommittrans(const HANDLE &hTransaction)
-{
-#if defined(WIN32) && !defined(WP8)
-    CommitTransaction(hTransaction);
-#endif
-}
-
-void IO::frollbacktrans(const HANDLE &hTransaction)
-{
-#if defined(WIN32) && !defined(WP8)
-    RollbackTransaction(hTransaction);
-#endif
-}
-
-void IO::fclosetrans(const HANDLE &hTransaction)
-{
-#if defined(WIN32) && !defined(WP8)
-    CloseHandle(hTransaction);
-#endif
-}
-
 HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess)
 {
     HANDLE hHandle = INVALID_HANDLE_VALUE;
@@ -113,20 +53,33 @@ HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess)
     return hHandle;
 }
 
-int64 IO::ftell(const HANDLE &hFile)
+int64 IO::ftell(const HANDLE &hFile) throw(std::runtime_error)
 {
 #ifdef WIN32
     LARGE_INTEGER liDistanceToMove = { 0 };
     LARGE_INTEGER lpNewFilePointer;
     
-    SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, FILE_CURRENT);
+    BOOL ret = SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, FILE_CURRENT);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: SetFilePointerEx failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
     return lpNewFilePointer.QuadPart;
 #else
-    return lseek(hFile, 0, SEEK_CUR);
+    off_t ret = ::lseek(hFile, 0, SEEK_CUR);
+    if(ret == static_cast<off_t>(-1))
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: lseek failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
+    return static_cast<int64>(ret);
 #endif
 }
 
-size_t IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos)
+int64 IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos) throw(std::runtime_error)
 {
     int origin = static_cast<int>(eSeekPos);
 #ifdef WIN32
@@ -134,60 +87,175 @@ size_t IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeek
     LARGE_INTEGER lpNewFilePointer;
     
     liDistanceToMove.QuadPart = offset;
-    SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, origin);
+    BOOL ret = SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, origin);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: SetFilePointerEx failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
     return lpNewFilePointer.QuadPart;
 #else
-    return lseek(hFile, offset, origin);
+    off_t ret = ::lseek(hFile, offset, origin);
+    if(ret == static_cast<off_t>(-1))
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: lseek failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
+    return static_cast<int64>(ret);
 #endif
 }
 
-size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile)
+size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile) throw(std::runtime_error)
 {
 #ifdef WIN32
     DWORD lpNumberOfBytesWritten;
-    WriteFile(hFile, pBuffer, (DWORD)nNumberOfBytesToWrite, &lpNumberOfBytesWritten, NULL);
-    assert(lpNumberOfBytesWritten == nNumberOfBytesToWrite);
+    BOOL ret = WriteFile(hFile, pBuffer, (DWORD)nNumberOfBytesToWrite, &lpNumberOfBytesWritten, NULL);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: WriteFile failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
 #else
     ssize_t lpNumberOfBytesWritten;
     lpNumberOfBytesWritten = ::write(hFile, pBuffer, nNumberOfBytesToWrite);
-    assert(lpNumberOfBytesWritten == (ssize_t)nNumberOfBytesToWrite);
+    if(lpNumberOfBytesWritten == -1)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: write failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
 #endif
+    
+    //check how many bytes are written by write
+    if(lpNumberOfBytesWritten != (ssize_t)nNumberOfBytesToWrite)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %zd", __FUNCTION__, nNumberOfBytesToWrite, lpNumberOfBytesWritten);
+        throw std::runtime_error(rError);
+    }
+    
     return lpNumberOfBytesWritten;
 }
 
-size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile)
+size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile) throw(std::runtime_error)
 {
 #ifdef WIN32
     DWORD lpNumberOfBytesRead;
-    ReadFile(hFile, pBuffer, (DWORD)nNumberOfBytesToRead, &lpNumberOfBytesRead, NULL);
-    assert(lpNumberOfBytesRead == nNumberOfBytesToRead);
+    BOOL ret = ReadFile(hFile, pBuffer, (DWORD)nNumberOfBytesToRead, &lpNumberOfBytesRead, NULL);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: ReadFile failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
 #else
     ssize_t lpNumberOfBytesRead;
     lpNumberOfBytesRead = ::read(hFile, pBuffer, nNumberOfBytesToRead);
-    assert(lpNumberOfBytesRead == (ssize_t)nNumberOfBytesToRead);
+    if(lpNumberOfBytesRead == -1)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: read failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
 #endif
+    
+    //check how many bytes are read by read
+    if(lpNumberOfBytesRead != (ssize_t)nNumberOfBytesToRead)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
+        throw std::runtime_error(rError);
+    }
+    
     return lpNumberOfBytesRead;
 }
 
-void IO::fresize(const HANDLE &hFile, const int64 &newSize)
+void IO::fresize(const HANDLE &hFile, const int64 &newSize) throw(std::runtime_error)
 {
 #ifdef WIN32
+    BOOL ret;
 	LARGE_INTEGER liDistanceToMove;
     LARGE_INTEGER lpNewFilePointer;
     
     liDistanceToMove.QuadPart = newSize;
-    SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, FILE_BEGIN);
-	SetEndOfFile(hFile);
+    ret = SetFilePointerEx(hFile, liDistanceToMove, &lpNewFilePointer, FILE_BEGIN);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: SetFilePointerEx failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
+    
+	ret = SetEndOfFile(hFile);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: SetEndOfFile failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
 #else
-    ftruncate(hFile, newSize);
+    int ret = ::ftruncate(hFile, newSize);
+    if(ret == -1)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: ftruncate failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
 #endif
 }
 
-void IO::fclose(const HANDLE &hFile)
+void IO::fclose(const HANDLE &hFile) throw(std::runtime_error)
 {
 #ifdef WIN32
-    CloseHandle(hFile);
+    BOOL ret = CloseHandle(hFile);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: CloseHandle failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
 #else
-    ::close(hFile);
+    int ret = ::close(hFile);
+    if(ret == -1)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: close failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
 #endif
 }
+
+void IO::fsync(const HANDLE &hFile) throw(std::runtime_error)
+{
+#ifdef WIN32
+    BOOL ret = ::FlushFileBuffers(hFile);
+    if(ret == FALSE)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: FlushFileBuffers failed errno: %d", __FUNCTION__, GetLastError());
+        throw std::runtime_error(rError);
+    }
+#else
+    int ret = ::fsync(hFile);
+    if(ret == -1)
+    {
+        char rError[512];
+        snprintf(rError, sizeof(rError), "%s: fsync failed errno: %d", __FUNCTION__, errno);
+        throw std::runtime_error(rError);
+    }
+#endif
+}
+
+
+
+
+
+
+
+
+
+
+
