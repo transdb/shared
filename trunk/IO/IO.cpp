@@ -123,7 +123,7 @@ size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, cons
 	if(lpNumberOfBytesWritten != (DWORD)nNumberOfBytesToWrite)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %u", __FUNCTION__, nNumberOfBytesToWrite, lpNumberOfBytesWritten);
+		snprintf(rError, sizeof(rError), "%s: WriteFile failed bytes to write: %zu, bytes writen by write: %u", __FUNCTION__, nNumberOfBytesToWrite, lpNumberOfBytesWritten);
 		throw std::runtime_error(rError);
 	}
 #else
@@ -163,7 +163,7 @@ size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE
 	if (lpNumberOfBytesRead != (DWORD)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: %zu, bytes read by ReadFile: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #else
@@ -180,7 +180,7 @@ size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE
 	if (lpNumberOfBytesRead != (ssize_t)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: %zu, bytes read by read: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #endif
