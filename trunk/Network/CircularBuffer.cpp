@@ -26,7 +26,7 @@
  */
 CircularBuffer::CircularBuffer(size_t size)
 {
-	m_buffer            = (uint8*)malloc(size);
+	m_buffer            = new uint8[size];
 	m_bufferSize		= size;
 	m_bufferEnd			= m_buffer + size;
 	m_regionAPointer	= m_buffer;		// reset A to the start
@@ -39,7 +39,8 @@ CircularBuffer::CircularBuffer(size_t size)
  */
 CircularBuffer::~CircularBuffer()
 {
-	free(m_buffer);
+	delete [] m_buffer;
+    m_buffer = NULL;
 }
 
 /** Read bytes from the buffer
