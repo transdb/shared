@@ -33,7 +33,7 @@ class FixedPool
     };
     
 public:
-    FixedPool() : m_pBlockList(NULL), m_allocationsFromSys(0)
+    explicit FixedPool() : m_pBlockList(NULL), m_allocationsFromSys(0)
     {
 
     }
@@ -126,17 +126,20 @@ public:
         }
     }
     
-    INLINE uint64 GetSize()
+    INLINE uint64 GetSize() const
     {
         return sizeof(T) * m_allocationsFromSys;
     }
     
-    INLINE uint64 allocationsFromSys()
+    INLINE uint64 allocationsFromSys() const
     {
         return m_allocationsFromSys;
     }
     
 private:
+    //disable copy constructor and assign
+	DISALLOW_COPY_AND_ASSIGN(FixedPool);
+    
     INLINE void* _allocate()
     {
         if(m_pBlockList)
