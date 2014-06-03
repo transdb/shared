@@ -26,24 +26,55 @@
 class ByteBuffer
 {
 public:
-	explicit ByteBuffer(): m_rpos(0), m_wpos(0), m_storage(512)
+	ByteBuffer(): m_rpos(0), m_wpos(0), m_storage(512)
 	{
         
 	}
     
-	explicit ByteBuffer(size_t res): m_rpos(0), m_wpos(0), m_storage(res)
+	ByteBuffer(size_t res): m_rpos(0), m_wpos(0), m_storage(res)
 	{
         
 	}
     
-	explicit ByteBuffer(const ByteBuffer &buf): m_rpos(buf.m_rpos), m_wpos(buf.m_wpos), m_storage(buf.m_storage)
+    //copy ctor
+	ByteBuffer(const ByteBuffer &buf): m_rpos(0), m_wpos(0)
     {
-        
+        *this = buf;
+    }
+    
+    //moveable ctor
+    ByteBuffer(ByteBuffer &&buf) : m_rpos(0), m_wpos(0)
+    {
+        *this = std::move(buf);
     }
     
 	virtual ~ByteBuffer()
     {
         
+    }
+    
+    ByteBuffer &operator=(const ByteBuffer &buf)
+    {
+        if(this != &buf)
+        {
+            clear();
+            m_rpos = buf.m_rpos;
+            m_wpos = buf.m_wpos;
+            m_storage = buf.m_storage;
+        }
+        return *this;
+    }
+    
+    ByteBuffer &operator=(ByteBuffer &&buf)
+    {
+        if(this != &buf)
+        {
+            clear();
+            std::swap(m_rpos, buf.m_rpos);
+            std::swap(m_wpos, buf.m_wpos);
+            std::swap(m_storage, buf.m_storage);
+        }
+        return *this;
     }
     
 	void clear()
@@ -296,7 +327,7 @@ public:
     
 	const uint8 *contents() const
 	{
-		return &m_storage[0];
+		return m_storage.data();
 	}
     
 	size_t size() const

@@ -14,7 +14,7 @@ class Vector
 {
 public:
     typedef T*              iterator;
-    typedef T*              value_type;
+    typedef T               value_type;
     typedef SizeT           size_type;
     static const size_type	npos = static_cast<size_type>(-1);
 	static const size_type	granularity = 16;
@@ -149,6 +149,17 @@ public:
     INLINE const T &operator[](const size_type &index) const
     {
 		return const_cast<Vector<T>&>(*this)[index];
+    }
+    
+    INLINE const value_type *data() const
+    {
+        return const_cast<Vector<T>&>(*this).data();
+    }
+
+    INLINE value_type *data()
+    {
+        assert(m_pBuff);
+        return &m_pBuff[0];
     }
     
     INLINE Vector<T, SizeT> &operator=(const Vector<T, SizeT> &v)
