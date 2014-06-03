@@ -21,25 +21,30 @@
 #define BYTEBUFFER_H
 
 #include "../Defines.h"
+#include "../Containers/Vector.h"
 
 class ByteBuffer
 {
 public:
-	const static size_t DEFAULT_SIZE = 256;
-    
-	ByteBuffer(): m_rpos(0), m_wpos(0)
+	explicit ByteBuffer(): m_rpos(0), m_wpos(0), m_storage(512)
 	{
-		m_storage.reserve(DEFAULT_SIZE);
+        
 	}
     
-	ByteBuffer(size_t res): m_rpos(0), m_wpos(0)
+	explicit ByteBuffer(size_t res): m_rpos(0), m_wpos(0), m_storage(res)
 	{
-		m_storage.reserve(res);
+        
 	}
     
-	ByteBuffer(const ByteBuffer &buf): m_rpos(buf.m_rpos), m_wpos(buf.m_wpos), m_storage(buf.m_storage) { }
+	explicit ByteBuffer(const ByteBuffer &buf): m_rpos(buf.m_rpos), m_wpos(buf.m_wpos), m_storage(buf.m_storage)
+    {
+        
+    }
     
-	virtual ~ByteBuffer() {}
+	virtual ~ByteBuffer()
+    {
+        
+    }
     
 	void clear()
 	{
@@ -291,7 +296,7 @@ public:
     
 	const uint8 *contents() const
 	{
-		return m_storage.data();
+		return &m_storage[0];
 	}
     
 	size_t size() const
@@ -423,7 +428,7 @@ protected:
 	// read and write positions
 	size_t				m_rpos;
 	size_t				m_wpos;
-	std::vector<uint8>	m_storage;
+	Vector<uint8>       m_storage;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
