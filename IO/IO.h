@@ -20,8 +20,13 @@ public:
         IO_WRITE_ONLY   = 2,
         IO_RDWR         = 3
     };
-    
 
+    enum FLAGS
+    {
+        IO_NORMAL       = 1,
+        IO_DIRECT       = 2
+    };
+    
     enum SEEK_POS
     {
 #ifdef WIN32
@@ -37,7 +42,7 @@ public:
     
     /** Open file
 	 */
-    static HANDLE fopen(const char *pPath, const ACCESS &eAccess);
+    static HANDLE fopen(const char *pPath, const ACCESS &eAccess, const FLAGS &eFlags);
     
    	/** Get pos in file
 	 */

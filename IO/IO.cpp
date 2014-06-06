@@ -8,27 +8,32 @@
 
 #include "IO.h"
 
-HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess)
+HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess, const FLAGS &eFlags)
 {
     HANDLE hHandle = INVALID_HANDLE_VALUE;
 #ifdef WIN32
-    DWORD dwDesiredAccess;
-    DWORD dwFlagsAndAttributes;
+    DWORD dwDesiredAccess = 0;
+    DWORD dwFlagsAndAttributes = 0;
     switch(eAccess)
     {
         case IO_READ_ONLY:
             dwDesiredAccess = GENERIC_READ;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_READONLY;
+            dwFlagsAndAttributes |= FILE_ATTRIBUTE_READONLY;
             break;
         case IO_WRITE_ONLY:
             dwDesiredAccess = GENERIC_WRITE;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
             break;
         case IO_RDWR:
             dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
-            dwFlagsAndAttributes = FILE_ATTRIBUTE_NORMAL;
             break;
     }
+    
+    //handle flags
+    if(eFlags & IO_NORMAL)
+        dwFlagsAndAttributes |= FILE_ATTRIBUTE_NORMAL;
+    else if(eFlags & IO_DIRECT)
+        dwFlagsAndAttributes |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+    
 #if defined(WIN32) && !defined(WP8)
     hHandle = CreateFile(pPath, dwDesiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, dwFlagsAndAttributes, NULL);
 #else
@@ -37,18 +42,44 @@ HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess)
 	hHandle = CreateFile2(awPath, dwDesiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, OPEN_EXISTING, NULL);
 #endif
 #else
+    int flags = 0;
     switch(eAccess)
     {
         case IO_READ_ONLY:
-            hHandle = ::open(pPath, O_RDONLY);
+            flags |= O_RDONLY;
             break;
         case IO_WRITE_ONLY:
-            hHandle = ::open(pPath, O_WRONLY);
+            flags |= O_WRONLY;
             break;
         case IO_RDWR:
-            hHandle = ::open(pPath, O_RDWR);
+            flags |= O_RDWR;
             break;
     }
+    
+#ifndef MAC
+    //handle flags
+    if(eFlags & IO_DIRECT)
+        flags |= O_DIRECT;
+    
+    //open file
+    hHandle = ::open(pPath, flags);
+#else
+    //open file
+    hHandle = ::open(pPath, flags);
+    
+    //handle flags
+    if(hHandle != INVALID_HANDLE_VALUE)
+    {
+        if(eFlags & IO_DIRECT)
+        {
+            if(fcntl(hHandle, F_NOCACHE, 1) < 0)
+            {
+                IO::fclose(hHandle);
+                hHandle = INVALID_HANDLE_VALUE;
+            }
+        }
+    }
+#endif
 #endif
     return hHandle;
 }

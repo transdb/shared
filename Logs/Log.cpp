@@ -454,7 +454,7 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
 FileLog::FileLog(const std::string &sFilePath) : m_hFile(INVALID_HANDLE_VALUE), m_filename(sFilePath)
 {
     CommonFunctions::CheckFileExists(m_filename.c_str(), true);
-    m_hFile = IO::fopen(m_filename.c_str(), IO::IO_RDWR);
+    m_hFile = IO::fopen(m_filename.c_str(), IO::IO_RDWR, IO::IO_NORMAL);
 	if(m_hFile == INVALID_HANDLE_VALUE)
     {
         Log.Error(__FUNCTION__, "Cannot create log file on path: %s. Log to file is disabled.", m_filename.c_str());
