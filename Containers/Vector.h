@@ -148,12 +148,15 @@ public:
 
     INLINE const T &operator[](const size_type &index) const
     {
-		return const_cast<Vector<T>&>(*this)[index];
+        assert(index >= 0);
+        assert(index < m_size);
+        return m_pBuff[index];
     }
     
     INLINE const value_type *data() const
     {
-        return const_cast<Vector<T>&>(*this).data();
+        assert(m_pBuff);
+        return &m_pBuff[0];
     }
 
     INLINE value_type *data()
