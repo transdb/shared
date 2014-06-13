@@ -163,15 +163,20 @@ time_t CommonFunctions::GetLastFileModificationTime(const char *pFilePath)
 
 std::vector<std::string> CommonFunctions::StrSplit(const std::string & src, const std::string & sep)
 {
-	std::vector<std::string>	tokens;
-	std::string					item;
-	std::stringstream			ss(src);
+    std::vector<std::string> tokens;
+    std::string	item;
+    std::string::size_type start = 0;
+    std::string::size_type end = src.find(sep);
+    while(end != std::string::npos)
+    {
+        item = src.substr(start, end - start);
+        tokens.push_back(item);
+        start = end + sep.length();
+        end = src.find(sep, start);
+    }
     
-	while(std::getline(ss, item, sep[0]))
-	{
-		tokens.push_back(item);
-	}
-    
+    item = src.substr(start, end);
+    tokens.push_back(item);
 	return tokens;
 }
 
