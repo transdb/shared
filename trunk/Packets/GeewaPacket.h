@@ -11,13 +11,14 @@
 
 #include "../Defines.h"
 #include "ByteBuffer.h"
+#include "http_parser.h"
 
 typedef std::map<std::string, std::string> HeaderMap;
 
 class GeewaPacket
 {
 public:
-    GeewaPacket();
+    explicit GeewaPacket();
     ~GeewaPacket();
     
     //Add HTTP data to packet (auto parse)
@@ -26,27 +27,16 @@ public:
     //clear packet for reuse
     void ClearPacket();
     
-    INLINE bool hasAllData()                        { return m_hasAllData; }
-    INLINE size_t allDataCounter()                  { return m_allDataCounter; }
-    INLINE HeaderMap &headers()                     { return m_headers; }
-    INLINE ByteBuffer &data()                       { return m_data; }
-    INLINE uint32 contentLenght()                   { return m_contentLenght; }
-    INLINE uint16 opcode()                          { return m_opcode; }
-    INLINE void setOpcode(const uint16 &opcode)     { m_opcode = opcode; }
+    //public declarations
+    ByteBuffer  m_data;
+    size_t      m_allDataCounter;
+    uint16      m_opcode;
+    bool        m_hasAllData;
     
 private:
-    //Parses HTTP header from input string
-    void ParseHTTPHeader(char *pHeader);
-    
-    //declarations
-    std::string m_header;
-    size_t      m_allDataCounter;
-    ByteBuffer  m_data;
-    uint32      m_contentLenght;
-    uint32      m_headerLenght;
-    uint16      m_opcode;
-    HeaderMap   m_headers;
-    bool        m_hasAllData;
+    //http parser
+    http_parser             m_rHttp_parser;
+    http_parser_settings    m_rHttp_parser_settings;
 };
 
 #endif
