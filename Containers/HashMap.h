@@ -33,13 +33,28 @@ private:
     HashNode    *m_pNext;
 };
 
-// Hash map class template
+//Allocator
 template <class K, class V>
+class HashMapNodeAllocator
+{
+public:
+    HashNode<K, V> *allocate(const K &key, const V &value)
+    {
+        return new HashNode<K, V>(key, value);
+    }
+    
+    void deallocate(HashNode<K, V> *p)
+    {
+        delete p;
+    }
+};
+
+// Hash map class template
+template <class K, class V, class _Allocator = HashMapNodeAllocator<K, V> >
 class HashMap
 {
     typedef HashNode<K, V>              HashNodeT;
     typedef HashNodeT*                  HashNodeTable;
-    typedef FixedPool<HashNodeT>        HashNodeMemPool;
     
 public:
     explicit HashMap(const uint64 &tableSize) : m_recordsCount(0)
@@ -55,11 +70,6 @@ public:
     {
         delete [] m_pTable;
         m_pTable = NULL;
-    }
-    
-    INLINE void recycle()
-    {
-        m_rHashNodeMemPool.recycle();
     }
     
     INLINE uint64 size() const
@@ -81,7 +91,7 @@ public:
         for(uint64 i = 0;i < rNodes.size();++i)
         {
             pEntry = rNodes[i];
-            m_rHashNodeMemPool.deallocate(pEntry);
+            m_rAllocator.deallocate(pEntry);
         }
         memset(m_pTable, 0, sizeof(HashNodeTable) * m_tableSize);
         m_recordsCount = 0;
@@ -150,7 +160,7 @@ public:
         
         if(pEntry == NULL)
         {
-            pEntry = m_rHashNodeMemPool.allocate(key, value);
+            pEntry = m_rAllocator.allocate(key, value);
             if(pPrev == NULL)
             {
                 m_pTable[hashValue] = pEntry;
@@ -195,7 +205,7 @@ public:
             {
                 pPrev->setNext(pEntry->getNext());
             }
-            m_rHashNodeMemPool.deallocate(pEntry);
+            m_rAllocator.deallocate(pEntry);
             --m_recordsCount;
         }
     }
@@ -236,7 +246,7 @@ private:
     
     //
     HashNodeTable       *m_pTable;
-    HashNodeMemPool     m_rHashNodeMemPool;
+    _Allocator          m_rAllocator;
     uint64              m_tableSize;
     uint64              m_tableSizeMask;
     uint64              m_recordsCount;
