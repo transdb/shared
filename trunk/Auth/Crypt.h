@@ -21,8 +21,6 @@
 
 #include "../Defines.h"
 
-static const char * g_pCryptKey = "T2%o9^24C2r14}:p63zU";
-
 class Crypt 
 {
 public:

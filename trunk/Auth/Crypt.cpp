@@ -19,6 +19,8 @@
 
 #include "Crypt.h"
 
+static const char * g_pCryptKey = "T2%o9^24C2r14}:p63zU";
+
 Crypt::Crypt()
 {
 	m_keyLen = strlen(g_pCryptKey);
