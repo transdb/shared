@@ -29,9 +29,14 @@ template<class T>
 class ListenSocket : public ThreadContext
 {
 public:
-	ListenSocket(const char * ListenAddress, uint32 Port)
+	explicit ListenSocket(const char * ListenAddress, uint32 Port) : m_socket(SocketOps::CreateTCPFileDescriptor()), m_opened(false), m_cp(sSocketMgr.GetCompletionPort())
 	{
-		m_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+		m_socket = SocketOps::CreateTCPFileDescriptor();
+        if(m_socket == INVALID_SOCKET)
+        {
+		 	Log.Error(__FUNCTION__, "ListenSocket constructor: could not create socket %u", WSAGetLastError());
+			throw std::runtime_error("could not create socket");
+        }
 
 		//socket settings
 		SocketOps::ReuseAddr(m_socket);
@@ -47,7 +52,9 @@ public:
 		{
 			struct hostent * hostname = gethostbyname(ListenAddress);
 			if(hostname != 0)
+            {
 				memcpy(&m_address.sin_addr.s_addr, hostname->h_addr_list[0], hostname->h_length);
+            }
 		}
 
 		// bind.. well attempt to.
@@ -65,9 +72,8 @@ public:
 			return;
 		}
 
+        //set variables
 		m_opened	= true;
-		m_len		= sizeof(sockaddr_in);
-		m_cp		= sSocketMgr.GetCompletionPort();
 	}
 
 	~ListenSocket()
@@ -77,15 +83,20 @@ public:
 
 	bool run()
 	{
+        T *pSocket;
+        SOCKET aSocket;
+        struct sockaddr newPeer;
+        INT newPeerLen = sizeof(sockaddr_in);
+        
 		while(m_opened)
 		{
-			aSocket = WSAAccept(m_socket, (sockaddr*)&m_tempAddress, (socklen_t*)&m_len, NULL, NULL);
+			aSocket = WSAAccept(m_socket, (sockaddr*)&newPeer, (LPINT*)&newPeerLen, NULL, NULL);
 			if(aSocket == INVALID_SOCKET)
 				continue;
 
-			socket = new T(aSocket);
-			socket->SetCompletionPort(m_cp);
-			socket->Accept(&m_tempAddress);
+			pSocket = new T(aSocket);
+			pSocket->SetCompletionPort(m_cp);
+			pSocket->Accept(&newPeer);
 		}
 		return true;
 	}
@@ -109,12 +120,7 @@ public:
 
 private:
 	SOCKET				m_socket;
-	struct sockaddr_in	m_address;
-	struct sockaddr_in	m_tempAddress;
-	volatile bool		m_opened;
-	uint32				m_len;
-	SOCKET				aSocket;
-	T *					socket;
+    std::atomic<bool>   m_opened;
 	HANDLE				m_cp;
 };
 
