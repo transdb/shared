@@ -63,14 +63,14 @@ public:
         //bind
 		if(::bind(m_fd, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
 		{
-			Log.Error(__FUNCTION__, "Could not bind");
+			Log.Error(__FUNCTION__, "Bind unsuccessful on port %u.", port);
 			throw std::runtime_error("Could not bind");
 		}
 
         //listen
 		if(::listen(m_fd, SOMAXCONN) < 0)
 		{
-			Log.Error(__FUNCTION__, "Could not listen");
+			Log.Error(__FUNCTION__, "Unable to listen on port %u.", port);
 			throw std::runtime_error("Could not listen");
 		}
         
