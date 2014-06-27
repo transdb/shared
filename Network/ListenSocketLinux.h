@@ -24,24 +24,27 @@ template<class T>
 class ListenSocket : public BaseSocket
 {
 public:
-	ListenSocket(const char * hostname, u_short port)
+	explicit ListenSocket(const char * hostname, u_short port) : m_fd(SocketOps::CreateTCPFileDescriptor()), m_deleted(false), m_connected(false)
 	{
-		m_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if(m_fd < 0)
+		{
+		 	Log.Error(__FUNCTION__, "ListenSocket constructor: could not create socket() %u (%s)", errno, strerror(errno));
+			throw std::runtime_error("could not create socket()");
+		}
         
 		//socket settings
 		SocketOps::ReuseAddr(m_fd);
 		SocketOps::Blocking(m_fd);
 		SocketOps::SetTimeout(m_fd, 60);
         
-		if(m_fd < 0)
-		{
-		 	Log.Error(__FUNCTION__, "ListenSocket constructor: could not create socket() %u (%s)", errno, strerror(errno));
-			return;
-		}	
-		
+        //create sock address struct
+        struct sockaddr_in address;
+        memset(&address, 0, sizeof(sockaddr_in));
+        
+        //DNS -> IP
 		if(!strcmp(hostname, "0.0.0.0"))
 		{
-			m_address.sin_addr.s_addr = htonl(INADDR_ANY);
+			address.sin_addr.s_addr = htonl(INADDR_ANY);
 		}
 		else
 		{
@@ -49,28 +52,29 @@ public:
 			if(!h)
 			{
 				Log.Error(__FUNCTION__, "Could not resolve listen address");
-				return;
+				throw std::runtime_error("Could not resolve listen address");
 			}
-
-			memcpy(&m_address.sin_addr, h->h_addr_list[0], sizeof(in_addr));
+			memcpy(&address.sin_addr, h->h_addr_list[0], sizeof(in_addr));
 		}
 
-		m_address.sin_family = AF_INET;
-		m_address.sin_port = ntohs(port);
-
-		if(::bind(m_fd, (const sockaddr*)&m_address, sizeof(sockaddr_in)) < 0)
+		address.sin_family = AF_INET;
+		address.sin_port = ntohs(port);
+        
+        //bind
+		if(::bind(m_fd, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
 		{
 			Log.Error(__FUNCTION__, "Could not bind");
-			return;
+			throw std::runtime_error("Could not bind");
 		}
 
-		if(listen(m_fd, SOMAXCONN) < 0)
+        //listen
+		if(::listen(m_fd, SOMAXCONN) < 0)
 		{
-			Log.Error(__FUNCTION__, "Could not bind");
-			return;
+			Log.Error(__FUNCTION__, "Could not listen");
+			throw std::runtime_error("Could not listen");
 		}
-
-		m_len 		= sizeof(sockaddr_in);
+        
+        //set variables
 		m_connected = true;
 		m_deleted	= false;
 		
@@ -87,12 +91,18 @@ public:
 	{
 		if(!m_connected)
 			return;
-
-		m_new_fd = accept(m_fd, (sockaddr*)&m_new_peer, &m_len);
-		if(m_new_fd > 0)
+        
+        //variables
+        SOCKET newFd;
+        struct sockaddr_in newPeer;
+        socklen_t newPeerLen = sizeof(sockaddr_in);
+        
+        //accept new socket
+		newFd = ::accept(m_fd, (sockaddr*)&newPeer, &newPeerLen);
+		if(newFd > 0)
 		{
-			T * s = new T(m_new_fd);
-			s->Accept(&m_new_peer);
+			T * s = new T(newFd);
+			s->Accept(&newPeer);
 		}
 	}
 
@@ -145,17 +155,12 @@ public:
 private:
 	/** This socket's file descriptor
 	 */
-	SOCKET			m_fd;
+	SOCKET              m_fd;
     
 	/** deleted/disconnected markers
 	 */
     std::atomic<bool>	m_deleted;
 	std::atomic<bool>   m_connected;
-    
-	SOCKET              m_new_fd;
-	sockaddr_in         m_new_peer;
-	sockaddr_in         m_address;
-	socklen_t           m_len;
 };
 
 #endif
