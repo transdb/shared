@@ -29,9 +29,8 @@ template<class T>
 class ListenSocket : public ThreadContext
 {
 public:
-	explicit ListenSocket(const char * ListenAddress, uint32 Port) : m_socket(SocketOps::CreateTCPFileDescriptor()), m_opened(false), m_cp(sSocketMgr.GetCompletionPort())
+	explicit ListenSocket(const char * hostname, u_short port) : m_socket(SocketOps::CreateTCPFileDescriptor()), m_opened(false), m_cp(sSocketMgr.GetCompletionPort())
 	{
-		m_socket = SocketOps::CreateTCPFileDescriptor();
         if(m_socket == INVALID_SOCKET)
         {
 		 	Log.Error(__FUNCTION__, "ListenSocket constructor: could not create socket %u", WSAGetLastError());
@@ -43,37 +42,46 @@ public:
 		SocketOps::Blocking(m_socket);
 		SocketOps::SetTimeout(m_socket, 60);
 
-		m_address.sin_family		= AF_INET;
-		m_address.sin_port			= ntohs((u_short)Port);
-		m_address.sin_addr.s_addr	= htonl(INADDR_ANY);
-		m_opened					= false;
+		//create sock address struct
+		struct sockaddr_in address;
+		memset(&address, 0, sizeof(sockaddr_in));
 
-		if(strcmp(ListenAddress, "0.0.0.0") != 0)
+        //DNS -> IP
+		if(!strcmp(hostname, "0.0.0.0"))
 		{
-			struct hostent * hostname = gethostbyname(ListenAddress);
-			if(hostname != 0)
-            {
-				memcpy(&m_address.sin_addr.s_addr, hostname->h_addr_list[0], hostname->h_length);
-            }
+			address.sin_addr.s_addr = htonl(INADDR_ANY);
+		}
+		else
+		{
+			struct hostent * h = gethostbyname(hostname);
+			if(!h)
+			{
+				Log.Error(__FUNCTION__, "Could not resolve listen address");
+				throw std::runtime_error("Could not resolve listen address");
+			}
+			memcpy(&address.sin_addr, h->h_addr_list[0], sizeof(in_addr));
 		}
 
+		address.sin_family = AF_INET;
+		address.sin_port = ntohs(port);
+
 		// bind.. well attempt to.
-		int ret = ::bind(m_socket, (const sockaddr*)&m_address, sizeof(m_address));
+		int ret = ::bind(m_socket, (const sockaddr*)&address, sizeof(address));
 		if(ret != 0)
 		{
-			Log.Error(__FUNCTION__, "Bind unsuccessful on port %u.", Port);
-			return;
+			Log.Error(__FUNCTION__, "Bind unsuccessful on port %u.", port);
+			throw std::runtime_error("Could not bind");
 		}
 
 		ret = ::listen(m_socket, SOMAXCONN);
 		if(ret != 0) 
 		{
-			Log.Error(__FUNCTION__, "Unable to listen on port %u.", Port);
-			return;
+			Log.Error(__FUNCTION__, "Unable to listen on port %u.", port);
+			throw std::runtime_error("Could not listen");
 		}
 
         //set variables
-		m_opened	= true;
+		m_opened = true;
 	}
 
 	~ListenSocket()
@@ -85,12 +93,12 @@ public:
 	{
         T *pSocket;
         SOCKET aSocket;
-        struct sockaddr newPeer;
-        INT newPeerLen = sizeof(sockaddr_in);
+		struct sockaddr_in newPeer;
+		INT newPeerLen = sizeof(sockaddr_in);
         
 		while(m_opened)
 		{
-			aSocket = WSAAccept(m_socket, (sockaddr*)&newPeer, (LPINT*)&newPeerLen, NULL, NULL);
+			aSocket = WSAAccept(m_socket, (sockaddr*)&newPeer, (LPINT)&newPeerLen, NULL, NULL);
 			if(aSocket == INVALID_SOCKET)
 				continue;
 
