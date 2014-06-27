@@ -114,6 +114,23 @@ public:
         }
     }
     
+    INLINE void getKeyValuePairs(Vector<std::pair<K, V> > &rPairs)
+    {
+        if(m_recordsCount != 0)
+        {
+            HashNodeT *pEntry;
+            for(uint64 i = 0;i < m_tableSize;++i)
+            {
+                pEntry = m_pTable[i];
+                while(pEntry != NULL)
+                {
+                    rPairs.push_back(std::pair<K, V>(pEntry->getKey(), pEntry->getValue()));
+                    pEntry = pEntry->getNext();
+                }
+            }
+        }
+    }
+    
     INLINE bool containsKey(const K &key)
     {
         uint64 hashValue = static_cast<uint64>(key) & m_tableSizeMask;
