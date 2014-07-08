@@ -294,7 +294,15 @@ void IO::fsync(const HANDLE &hFile)
 #endif
 }
 
-
+int IO::ferror()
+{
+#ifdef WIN32
+    return GetLastError();
+#else
+    return errno;
+#endif
+    
+}
 
 
 
