@@ -262,12 +262,12 @@ public:
 		return *this;
 	}
     
-	uint8 operator[](size_t pos)
+	uint8 operator[](size_t pos) const
 	{
 		return read<uint8>(pos);
 	}
     
-	size_t rpos()
+	size_t rpos() const
 	{
 		return m_rpos;
 	};

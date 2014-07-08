@@ -71,6 +71,10 @@ public:
    	/** Sync data to device
 	 */
 	static void fsync(const HANDLE &hFile);
+    
+    /** Get error number
+     */
+    static int ferror();
 };
 
 class IOHandleGuard
