@@ -28,9 +28,9 @@ public:
     }
     
 	//constructor
-    Vector(const SizeT &initialSize) : m_pBuff(NULL),
-                                       m_size(0),
-                                       m_capacity(0)
+    Vector(size_type initialSize) : m_pBuff(NULL),
+                                    m_size(0),
+                                    m_capacity(0)
     {
         reserve(initialSize);
     }
@@ -78,7 +78,7 @@ public:
         ++m_size;
     }
     
-    INLINE void reserve(const size_type &newCapacity)
+    INLINE void reserve(size_type newCapacity)
     {
         assert(newCapacity >= 0);
         
@@ -92,7 +92,7 @@ public:
         }
     }
     
-    INLINE void resize(const size_type &newSize)
+    INLINE void resize(size_type newSize)
     {
         reserve(newSize);
         m_size = newSize;
@@ -119,7 +119,7 @@ public:
         return m_size;
     }
     
-    INLINE bool empty()
+    INLINE bool empty() const
     {
         return m_size == 0;
     }
@@ -139,14 +139,14 @@ public:
         --m_size;
     }
     
-	INLINE T &operator[](const size_type &index)
+	INLINE T &operator[](size_type index)
     {
         assert(index >= 0);
         assert(index < m_size);
         return m_pBuff[index];
     }
 
-    INLINE const T &operator[](const size_type &index) const
+    INLINE const T &operator[](size_type index) const
     {
         assert(index >= 0);
         assert(index < m_size);
@@ -211,7 +211,7 @@ INLINE static T _S_read(Vector<uint8> &rVector, size_t &rpos)
     if(rpos + sizeof(T) > rVector.size())
         r = (T)0;
     else
-        r = *((T*)&rVector[rpos]);
+        memcpy(&r, &rVector[rpos], sizeof(T));
     rpos += sizeof(T);
     return r;
 }
