@@ -181,15 +181,4 @@ private:
     uint64      m_allocationsFromSys;
 };
 
-template <class T>
-NOINLINE static void _S_FixedPool_Recycle(const char *pName, std::mutex &rLock, T &rT)
-{
-    Log.Debug(__FUNCTION__, "%s recycling started.", pName);
-    {
-        std::lock_guard<std::mutex> rBGuard(rLock);
-        rT.recycle();
-    }
-    Log.Debug(__FUNCTION__, "%s recycling finished.", pName);
-}
-
 #endif
