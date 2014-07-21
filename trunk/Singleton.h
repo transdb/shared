@@ -33,25 +33,32 @@
   initialiseSingleton(type); \
   type the##type
 
-template <class type> class Singleton {
+template <class type>
+class Singleton
+{
 public:
-  /// Constructor
-  Singleton() {
-	/// If you hit this assert, this singleton already exists -- you can't create another one!
-	assert(this->mSingleton == 0);
-	this->mSingleton = static_cast<type *>(this);
-  }
-  /// Destructor
-  virtual ~Singleton() {
-	this->mSingleton = 0;
-  }
-
-  static type & getSingleton()	{ return *mSingleton; }
-  static type * getSingletonPtr() { return mSingleton; }
-
+    /// Constructor
+    explicit Singleton()
+    {
+        /// If you hit this assert, this singleton already exists -- you can't create another one!
+        assert(this->mSingleton == 0);
+        this->mSingleton = static_cast<type*>(this);
+    }
+    
+    /// Destructor
+    virtual ~Singleton()
+    {
+        this->mSingleton = 0;
+    }
+    
+    static type & getSingleton()	{ return *mSingleton; }
+    static type * getSingletonPtr() { return mSingleton; }
+    
 protected:
-
-  /// Singleton pointer, must be set to 0 prior to creating the object
-  static type * mSingleton;
+    /// Singleton pointer, must be set to 0 prior to creating the object
+    static type * mSingleton;
+    
+private:
+    DISALLOW_COPY_AND_ASSIGN(Singleton);
 };
 #endif

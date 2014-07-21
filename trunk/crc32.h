@@ -70,7 +70,9 @@ public:
 		return (UINT)(this->*m_func)(buf, len);
 	}
     
-private:    
+private:
+    DISALLOW_COPY_AND_ASSIGN(CRC_32);
+    
     INLINE SIZE_T Min(SIZE_T x, SIZE_T y)
     {
         // Branchless minimum (from http://graphics.stanford.edu/~seander/bithacks.html#IntegerMinOrMax)
