@@ -20,13 +20,21 @@
 #ifndef _CALLBACK_H
 #define _CALLBACK_H
 
-class CallbackBase {
+#include "Defines.h"
+
+class CallbackBase
+{
 public:
+    explicit CallbackBase() {}
+    virtual ~CallbackBase() {};
 	virtual void execute() = 0;
-	virtual ~CallbackBase() {};
+    
+private:
+    DISALLOW_COPY_AND_ASSIGN(CallbackBase);
 };
 
-class CallbackFP {
+class CallbackFP
+{
 	typedef void(*callback)();
 	callback mycallback;
 public:
