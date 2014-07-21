@@ -27,13 +27,13 @@
 class Packet : public ByteBuffer
 {
 public:
-    INLINE Packet() : ByteBuffer(), m_opcode(0) { }
-	INLINE Packet(uint16 opcode, size_t res) : ByteBuffer(res), m_opcode(opcode) {}
-	INLINE Packet(size_t res) : ByteBuffer(res), m_opcode(0) { }
-    INLINE Packet(const Packet &packet) : ByteBuffer(packet), m_opcode(packet.m_opcode) {}
+    Packet() : ByteBuffer(), m_opcode(0) { }
+	Packet(uint16 opcode, size_t res) : ByteBuffer(res), m_opcode(opcode) {}
+	Packet(size_t res) : ByteBuffer(res), m_opcode(0) { }
+    Packet(const Packet &packet) : ByteBuffer(packet), m_opcode(packet.m_opcode) {}
 
     //! Clear packet and set opcode all in one mighty blow
-    INLINE void Initialize(uint16 opcode, size_t newres = 200)
+    void Initialize(uint16 opcode, size_t newres = 200)
     {
         clear();
 		m_storage.reserve(newres);
@@ -50,10 +50,10 @@ protected:
 class StackPacket : public StackBuffer
 {
 public:
-	INLINE StackPacket(uint16 opcode, uint8* ptr, size_t sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
+	StackPacket(uint16 opcode, uint8* ptr, size_t sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
 
 	//! Clear packet and set opcode all in one mighty blow
-	INLINE void Initialize(uint16 opcode)
+	void Initialize(uint16 opcode)
 	{
 		StackBuffer::Clear();
 		m_opcode = opcode;

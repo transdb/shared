@@ -42,6 +42,7 @@
 class FileLog
 {
 private:
+    DISALLOW_COPY_AND_ASSIGN(FileLog);
 	HANDLE          m_hFile;
     std::string     m_filename;
     
@@ -92,6 +93,8 @@ public:
     }
     
 private:
+    DISALLOW_COPY_AND_ASSIGN(ScreenLog);
+    
 	void Color(unsigned int color);
 	void Time();
 	void Line();
