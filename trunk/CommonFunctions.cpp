@@ -22,7 +22,7 @@
 #define GZIP_ENCODING				16
 #define ZLIB_CHUNK                  16384
 
-int CommonFunctions::decompressGzip(const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut)
 {
     int ret;
     size_t processed;
@@ -73,7 +73,7 @@ int CommonFunctions::decompressGzip(const uint8 *pData, const size_t &dataLen, B
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-int CommonFunctions::compressGzip(const int &compressionLevel, const uint8 *pData, const size_t &dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut)
 {
     int ret;
     uint32 processed;
