@@ -134,7 +134,7 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 						pSocket->WriteCallback(0);                      // Perform actual send()
 						if (pSocket->Writable() && pSocket->IsConnected())
 						{
-							pSocket->PostEvent(EVFILT_WRITE);     // Still remaining data.
+							pSocket->PostEvent(EVFILT_WRITE);           // Still remaining data.
 						}
 						else
 						{
@@ -153,6 +153,9 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 		/* clear the exception set for the next loop */
 		FD_ZERO(&m_exceptionSet);
 		m_socketLock.unlock();
+        
+        //
+        Wait(100);
 	}
 }
 
