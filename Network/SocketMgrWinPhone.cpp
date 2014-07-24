@@ -155,7 +155,7 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 		m_socketLock.unlock();
         
         //
-        Wait(100);
+        pContext->Wait(100);
 	}
 }
 
