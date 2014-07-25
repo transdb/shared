@@ -88,6 +88,9 @@ namespace SocketEnums
         
         C_MSG_READ_CONFIG                   = 27,
         S_MSG_READ_CONFIG                   = 28,
+        
+        C_MSG_DEFRAGMENT_FREESPACE          = 29,
+        S_MSG_DEFRAGMENT_FREESPACE          = 30,
 
 		OP_NUM
 	};
