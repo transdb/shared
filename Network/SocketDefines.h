@@ -86,7 +86,7 @@ struct OverlappedStruct
 	{
         if(m_inUse)
         {
-            Log.Error(__FUNCTION__, "!!!! Network: Detected double use of read/write event! Previous event was %u.", m_event.load());
+            Log.Error(__FUNCTION__, "!!!! Network: Detected double use of read/write event! Previous event was %u.", (uint32)m_event);
         }
 
         m_inUse = true;
