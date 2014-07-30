@@ -57,18 +57,39 @@
 /** Connect to a server.
 * @param hostname Hostname or IP address to connect to
 * @param port Port to connect to
+* @param timeout connect timeout in seconds
 * @return templated type if successful, otherwise null
 */
 template<class T>
-T* ConnectTCPSocket(const char * hostname, u_short port, uint32 timeout = 3)
+static T* ConnectTCPSocket(const char * hostname, u_short port, uint32 timeout = 3)
 {
-	T * s = new T(0);
-	if(!s->Connect(hostname, port, timeout))
-	{
-		s->Delete();
+	struct hostent * ci = gethostbyname(hostname);
+	if(ci == NULL)
 		return NULL;
-	}
-	return s;	
+    
+    //create peer info
+    sockaddr_in peer;
+	peer.sin_family = ci->h_addrtype;
+	peer.sin_port = ntohs(port);
+    peer.sin_family = AF_INET;
+	memcpy(&peer.sin_addr.s_addr, ci->h_addr_list[0], ci->h_length);
+    
+    //create socket fd
+    SOCKET fd = SocketOps::CreateTCPFileDescriptor();
+    
+    //try to connect
+    bool status = T::Connect(fd, &peer, timeout);
+    if(status)
+    {
+        T * s = new T(fd);
+        s->Accept(&peer);
+        return s;
+    }
+    else
+    {
+        SocketOps::CloseSocket(fd);
+        return NULL;
+    }
 }
 
 #endif
