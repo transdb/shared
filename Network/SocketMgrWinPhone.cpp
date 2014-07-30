@@ -29,16 +29,13 @@ SocketMgr::SocketMgr()
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2,2), &wsaData);
 
-	FD_ZERO(&m_allSet);
 	FD_ZERO(&m_readableSet);
 	FD_ZERO(&m_writableSet);
-	FD_ZERO(&m_exceptionSet);
-	m_socket_count = 0;
 }
 
 SocketMgr::~SocketMgr()
 {
-
+	WSACleanup();
 }
 
 void SocketMgr::SpawnWorkerThreads()
@@ -51,9 +48,11 @@ void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
 	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	if (m_sockets.find(pSocket) == m_sockets.end())
 	{
-		FD_SET(pSocket->GetFd(), &m_allSet);
+		if (pSocket->Writable())
+			FD_SET(pSocket->GetFd(), &m_writableSet);
+		else
+			FD_SET(pSocket->GetFd(), &m_readableSet);
 		m_sockets.insert(pSocket);
-		++m_socket_count;
 	}
 }
 
@@ -62,9 +61,9 @@ void SocketMgr::RemoveSocket(BaseSocket * pSocket)
 	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	if (m_sockets.find(pSocket) != m_sockets.end())
 	{
-		FD_CLR(pSocket->GetFd(), &m_allSet);
+		FD_CLR(pSocket->GetFd(), &m_readableSet);
+		FD_CLR(pSocket->GetFd(), &m_writableSet);
 		m_sockets.erase(pSocket);
-		--m_socket_count;
 	}
 }
 
@@ -76,11 +75,11 @@ void SocketMgr::WantWrite(BaseSocket * pSocket)
 
 void SocketMgr::thread_func(ThreadContext *pContext)
 {
-	size_t r_size = sizeof(m_allSet);
 	int fd_count;
 	timeval rTimeout;
 	rTimeout.tv_sec = 0;
 	rTimeout.tv_usec = 0;
+	FD_SET readable;
 	FD_SET writable;
 	BaseSocket *pSocket;
 	SocketSet::iterator itr, itr2;
@@ -88,74 +87,75 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 	for (;;)
 	{
 		m_socketLock.lock();
-		if (m_socket_count == 0)
+		if (m_sockets.empty())
 		{
 			m_socketLock.unlock();
 			pContext->Wait(50);
 			continue;
 		}
 
-		/* copy the all set into the readable set */
-		memcpy(&m_readableSet, &m_allSet, r_size);
-		memcpy(&writable, &m_writableSet, r_size);
+		/* copy the sets */
+		memcpy(&readable, &m_readableSet, sizeof(m_readableSet));
+		memcpy(&writable, &m_writableSet, sizeof(m_writableSet));
 
-		/* clear the writable set for the next loop */
+		/** clear the writable set for the next loop 
+			will work like EV_ONESHOT 
+		*/
 		FD_ZERO(&m_writableSet);
 
-		m_socketLock.lock();
-		fd_count = select(FD_SETSIZE, &m_readableSet, &writable, &m_exceptionSet, &rTimeout);
-		m_socketLock.unlock();
+		//poll sockets status
+		fd_count = select(FD_SETSIZE, &readable, &writable, NULL, &rTimeout);
 		if (fd_count < 0)
 		{
 			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, WSAGetLastError());
 		}
 		else if (fd_count > 0)
 		{
-			LockingPtr<SocketSet> pSockets(m_sockets, NULL);
-			if (pSockets->size())
+			for (itr = m_sockets.begin(); itr != m_sockets.end();)
 			{
-				for (itr = pSockets->begin(); itr != pSockets->end();)
-				{
-					itr2 = itr;
-					++itr;
-					pSocket = (*itr2);
+				itr2 = itr;
+				++itr;
+				pSocket = (*itr2);
 
-					if (FD_ISSET(pSocket->GetFd(), &m_readableSet))
+				// If the ReadSet is marked for this socket then this means data
+				// is available to be read on the socket
+				if (FD_ISSET(pSocket->GetFd(), &readable))
+				{
+					if (pSocket->IsConnected())
 					{
 						pSocket->ReadCallback(0);
-						if (pSocket->Writable() && pSocket->IsConnected())
-						{
-							pSocket->BurstPush();
-						}
 					}
-					else if (FD_ISSET(pSocket->GetFd(), &writable))
+				}
+
+				// If the WriteSet is marked on this socket then this means the internal
+				// data buffers are available for more data
+				if (FD_ISSET(pSocket->GetFd(), &writable))
+				{
+					if (pSocket->IsConnected())
 					{
-						pSocket->BurstBegin();                          // Lock receive mutex
-						pSocket->WriteCallback(0);                      // Perform actual send()
-						if (pSocket->Writable() && pSocket->IsConnected())
+						pSocket->BurstBegin();                      // Lock receive mutex
+						pSocket->WriteCallback(0);                  // Perform actual send()
+						if (pSocket->Writable())
 						{
-							pSocket->PostEvent(EVFILT_WRITE);           // Still remaining data.
+							pSocket->PostEvent(EVFILT_WRITE);		// Still remaining data.
 						}
 						else
 						{
 							pSocket->DecSendLock();
 						}
-						pSocket->BurstEnd();                            // Unlock
-					}
-					else if (FD_ISSET(pSocket->GetFd(), &m_exceptionSet))
-					{
-						pSocket->Disconnect();
+						pSocket->BurstEnd();						// Unlock
 					}
 				}
 			}
 		}
-
-		/* clear the exception set for the next loop */
-		FD_ZERO(&m_exceptionSet);
+		//unlock socket set
 		m_socketLock.unlock();
         
-        //
-        pContext->Wait(100);
+		//update socket collector
+		sSocketGarbageCollector.Update();
+
+		//wait
+		pContext->Wait(100);
 	}
 }
 

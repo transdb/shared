@@ -54,15 +54,11 @@ public:
 	void thread_func(ThreadContext *pContext);
 
 private:
-	FD_SET					m_allSet;
 	FD_SET					m_writableSet;
 	FD_SET					m_readableSet;
-	FD_SET					m_exceptionSet;
-	uint32					m_socket_count;
 
 	SocketSet				m_sockets;
 	std::recursive_mutex	m_socketLock;
-	volatile long			m_threadcount;
 };
 
 #define sSocketMgr SocketMgr::getSingleton()
