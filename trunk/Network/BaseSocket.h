@@ -31,6 +31,10 @@ public:
 	virtual SOCKET GetFd() const = 0;
     virtual void SetFd(SOCKET fd) = 0;
 
+	/** Open a connection to another machine.
+	 */
+	static bool Connect(SOCKET fd, const sockaddr_in *peer, uint32 timeout);
+    
 	/** Is this socket in a read state? Or a write state?
 	 */
 	virtual bool Writable() const = 0;
