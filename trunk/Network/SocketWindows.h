@@ -29,115 +29,95 @@ public:
 	// Constructor. If fd = 0, it will be assigned 
 	Socket(SOCKET fd, uint32 sendbuffersize, uint32 recvbuffersize);
 	
-	// Destructor.
+	/** Destructor
+	*/
 	virtual ~Socket();
 
 	/** Returns the socket's file descriptor
-     */
+	*/
 	SOCKET GetFd() const        { return m_fd; }
-    
-	// Open a connection to another machine.
-	bool Connect(const char * Address, uint32 Port, uint32 timeout);
 
-	// Disconnect the socket.
-	void Disconnect();
+	/** Locks the socket's write buffer so you can begin a write operation
+	*/
+	void BurstBegin()	{ m_writeMutex.lock(); }
 
-	// Accept from the already-set fd.
-	void Accept(sockaddr_in * address);
+	/** Unlocks the socket's write buffer so others can write to it
+	*/
+	void BurstEnd()		{ m_writeMutex.unlock(); }
 
-/* Implementable methods */
+	/** Writes the specified data to the end of the socket's write buffer
+	*/
+	bool BurstSend(const void * data, size_t bytes);
 
-	// Called when data is received.
-	virtual void OnRead() {}
-
-	// Called when a connection is first successfully established.
-	virtual void OnConnect() {}
-
-	// Called when the socket is disconnected from the client (either forcibly or by the connection dropping)
-	virtual void OnDisconnect() {}
-
-/* Sending Operations */
-
-	// Locks sending mutex, adds bytes, unlocks mutex.
-	bool Send(const uint8 * Bytes, size_t Size);
-
-	// Burst system - Locks the sending mutex.
-	void BurstBegin() { m_writeMutex.lock(); }
-
-	// Burst system - Adds bytes to output buffer.
-	bool BurstSend(const uint8 * Bytes, size_t Size);
-
-	// Burst system - Pushes event to queue - do at the end of write events.
+	/** Burst system - Pushes event to queue - do at the end of write events.
+	*/
 	void BurstPush();
 
-	// Burst system - Unlocks the sending mutex.
-	void BurstEnd() { m_writeMutex.unlock(); }
+	/** Disconnects the socket, removing it from the socket engine, and queues
+	* deletion.
+	*/
+	void Disconnect();
 
-/* Client Operations */
-
-	// Get the client's ip in numerical form.
-	std::string GetRemoteIP();
-	
-/* Platform-specific methods */
-
-	void SetupReadEvent();
-	void ReadCallback(size_t len);
-	void WriteCallback();
-
-	bool IsDeleted() const				{ return m_deleted; }
-	bool IsConnected() const			{ return m_connected; }
-    
-	CircularBuffer& GetReadBuffer()		{ return m_readBuffer; }
-	CircularBuffer& GetWriteBuffer()	{ return m_writeBuffer; }
-
-/* Deletion */
+	/** Queues the socket for deletion, and disconnects it, if it is connected
+	*/
 	void Delete();
 
-protected:
+	/** Implemented ReadCallback()
+	*/
+	void ReadCallback(size_t len);
 
-	// Called when connection is opened.
-	void _OnConnect();
-  
-	SOCKET              m_fd;
+	/** Implemented WriteCallback()
+	*/
+	void WriteCallback(size_t len);
 
-	/** Read (inbound)/Write (outbound) buffer
-	 */
-	CircularBuffer      m_readBuffer;
-	CircularBuffer      m_writeBuffer;
+	/* */
+	void Accept(const sockaddr_in * peer);
 
-	/** Socket's write buffer protection
-	 */
-    std::mutex          m_writeMutex;
+	/** Get IP in numerical form
+	*/
+	const char * GetIP() { return inet_ntoa(m_peer.sin_addr); }
 
-	// we are connected? stop from posting events.
-    std::atomic<bool>   m_connected;
+	/** Are we writable?
+	*/
+	bool Writable() const;
 
-    // We are deleted? Stop us from posting events.
-    std::atomic<bool>   m_deleted;
+	/** Occurs on error
+	*/
+	void OnError(int errcode);
 
-	sockaddr_in         m_client;
+	/** If for some reason we need to access the buffers directly
+	*/
+	INLINE CircularBuffer & GetReadBuffer()		{ return m_readBuffer; }
+	INLINE CircularBuffer & GetWriteBuffer()	{ return m_writeBuffer; }
 
-public:
+	/** SocketMgs need access to read/write event
+	*/
+	INLINE OverlappedStruct & GetReadEvent()	{ return m_readEvent; }
+	INLINE OverlappedStruct & GetWriteEvent()	{ return m_writeEvent; }
+
+	// Posts a kevent with the specifed arguments.
+	void PostEvent(int events);
+
 	// Set completion port that this socket will be assigned to.
-	void SetCompletionPort(HANDLE cp) 
-	{ 
-		m_completionPort = cp; 
-	}
-	
-	// Atomic wrapper functions for increasing read/write locks
-	void IncSendLock() 
-	{ 
-		++m_writeLock; 
+	void SetCompletionPort(HANDLE cp)
+	{
+		m_completionPort = cp;
 	}
 
-	void DecSendLock() 
-	{ 
-		--m_writeLock; 
+	// Atomic wrapper functions for increasing read/write locks
+	void IncSendLock()
+	{
+		++m_writeLock;
+	}
+
+	void DecSendLock()
+	{
+		--m_writeLock;
 	}
 
 	bool AcquireSendLock()
 	{
-		if(m_writeLock)
+		if (m_writeLock)
 			return false;
 		else
 		{
@@ -146,18 +126,58 @@ public:
 		}
 	}
 
+	// Get the client's ip in numerical form.
+	std::string GetRemoteIP();
+
+	/** Are we connected?
+	*/
+	bool IsConnected() const  { return m_connected; }
+	bool IsDeleted() const    { return m_deleted; }
+
+protected:
+	/** This socket's file descriptor
+	*/
+	SOCKET              m_fd;
+
+	// Completion port socket is assigned to
+	HANDLE              m_completionPort;
+
+	/** deleted/disconnected markers
+	*/
+	std::atomic<bool>	m_deleted;
+	std::atomic<bool>	m_connected;
+
+	/** Called when connection is opened.
+	*/
+	void _OnConnect();
+  
+	/** Connected peer
+	*/
+	sockaddr_in 		m_peer;
+
+	/** Read (inbound)/Write (outbound) buffer
+	 */
+	CircularBuffer      m_readBuffer;
+	CircularBuffer      m_writeBuffer;
+
+	/** Overlapped struct for WSASend and WSARecv
+	*/
 	OverlappedStruct    m_readEvent;
 	OverlappedStruct    m_writeEvent;
 
-private:
-	// Completion port socket is assigned to
-	HANDLE              m_completionPort;
-	
-	// Write lock, stops multiple write events from being posted.
-	std::atomic<long>   m_writeLock;
+	/** Socket's write buffer protection
+	*/
+	std::mutex 			m_writeMutex;
+
+	/** Write lock, stops multiple write events from being posted.
+	*/
+	std::atomic<long>	m_writeLock;
 	
 	// Assigns the socket to his completion port.
 	void AssignToCompletionPort();
+
+	// setup WSArecv event
+	void SetupReadEvent();
 };
 
 #endif

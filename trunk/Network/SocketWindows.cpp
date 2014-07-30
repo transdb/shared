@@ -39,34 +39,52 @@ Socket::~Socket()
 
 }
 
-bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
+bool BaseSocket::Connect(SOCKET fd, const sockaddr_in *peer, uint32 timeout)
 {
-	struct hostent * ci = gethostbyname(Address);
-	if(ci == NULL)
+	//set non-blocking
+	SocketOps::Nonblocking(fd);
+
+	//try to connect
+	int result = connect(fd, (const sockaddr*)peer, sizeof(sockaddr_in));
+	if (result == 0 || WSAGetLastError() != WSAEWOULDBLOCK)
+	{
+		Log.Error(__FUNCTION__, "result == %d, errno = %d", result, WSAGetLastError());
+		std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
 		return false;
+	}
 
-	m_client.sin_family = ci->h_addrtype;
-	m_client.sin_port = ntohs((u_short)Port);
-	memcpy(&m_client.sin_addr.s_addr, ci->h_addr_list[0], ci->h_length);
+	//async socket connect
+	int count;
+	fd_set fdset;
+	struct timeval tv;
+	bool oResult = false;
 
-	/* switch the socket to blocking mode */
-	SocketOps::Blocking(m_fd);
+	FD_ZERO(&fdset);
+	FD_SET(fd, &fdset);
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
 
-	/* try to connect */
-	int ret = connect(m_fd, (const sockaddr*)&m_client, sizeof(m_client));
-	if(ret == -1)
-		return false;
-
-	// at this point the connection was established
-	m_completionPort = sSocketMgr.GetCompletionPort();
-
-	_OnConnect();
-	return true;
+	count = select(FD_SETSIZE, NULL, &fdset, NULL, &tv);
+	if (count == 1)
+	{
+		int so_error;
+		socklen_t len = sizeof(so_error);
+		getsockopt(fd, SOL_SOCKET, SO_ERROR, (char*)&so_error, &len);
+		if (so_error == 0)
+		{
+			oResult = true;
+		}
+		else
+		{
+			Log.Error(__FUNCTION__, "SO_ERROR: %d", so_error);
+		}
+	}
+	return oResult;
 }
 
-void Socket::Accept(sockaddr_in * address)
+void Socket::Accept(const sockaddr_in * peer)
 {
-	memcpy(&m_client, address, sizeof(*address));
+	memcpy(&m_peer, peer, sizeof(sockaddr_in));
 	_OnConnect();
 }
 
@@ -87,28 +105,25 @@ void Socket::_OnConnect()
 	OnConnect();
 }
 
-bool Socket::Send(const uint8 * Bytes, size_t Size)
+bool Socket::BurstSend(const void * data, size_t bytes)
 {
-	bool rv;
-
-	// This is really just a wrapper for all the burst stuff.
-	BurstBegin();
-	rv = BurstSend(Bytes, Size);
-	if(rv)
-		BurstPush();
-	BurstEnd();
-
-	return rv;
+	return m_writeBuffer.Write(data, bytes);
 }
 
-bool Socket::BurstSend(const uint8 * Bytes, size_t Size)
+void Socket::OnError(int errcode)
 {
-	return m_writeBuffer.Write(Bytes, Size);
+	Log.Error(__FUNCTION__, "Error number: %u", errcode);
+	Disconnect();
+}
+
+bool Socket::Writable() const
+{
+	return (m_writeBuffer.GetSize() > 0) ? true : false;
 }
 
 std::string Socket::GetRemoteIP()
 {
-	char* ip = (char*)inet_ntoa(m_client.sin_addr);
+	char* ip = (char*)inet_ntoa(m_peer.sin_addr);
 	if(ip != NULL)
 		return std::string(ip);
 	else
@@ -148,7 +163,7 @@ void Socket::Delete()
 	sSocketGarbageCollector.QueueSocket(this);
 }
 
-void Socket::WriteCallback()
+void Socket::WriteCallback(size_t len)
 {
 	if(m_writeBuffer.GetContiguiousBytes())
 	{
@@ -222,8 +237,13 @@ void Socket::BurstPush()
 {
 	if(AcquireSendLock())
 	{
-		WriteCallback();
+		WriteCallback(0);
 	}
+}
+
+void Socket::PostEvent(int events)
+{
+	//Not for win32
 }
 
 #endif
