@@ -29,7 +29,6 @@ public:
 	/** Returns the socket's file descriptor
 	 */
 	virtual SOCKET GetFd() const = 0;
-    virtual void SetFd(SOCKET fd) = 0;
 
 	/** Open a connection to another machine.
 	 */

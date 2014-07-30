@@ -23,7 +23,7 @@
 
 #include "SocketDefines.h"
 
-class Socket
+class Socket : public BaseSocket
 {
 public:
 	// Constructor. If fd = 0, it will be assigned 
@@ -35,7 +35,6 @@ public:
 	/** Returns the socket's file descriptor
      */
 	SOCKET GetFd() const        { return m_fd; }
-	void SetFd(SOCKET fd)       { m_fd = fd; }
     
 	// Open a connection to another machine.
 	bool Connect(const char * Address, uint32 Port, uint32 timeout);

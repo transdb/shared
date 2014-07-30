@@ -24,8 +24,6 @@
 #include "SocketDefines.h"
 #ifdef CONFIG_USE_KQUEUE
 
-#define THREAD_EVENT_SIZE   4
-
 class Socket;
 class SocketWorkerThread;
 class ListenSocketBase;
@@ -37,7 +35,6 @@ class SocketMgr : public Singleton<SocketMgr>
 private:
     // kqueue instance handle
     int 				m_kq_fd;
-    int                 m_eventSize;
     
     // fd -> pointer binding.
 	volatile SocketSet	m_sockets;
@@ -48,24 +45,11 @@ public:
     /// friend class of the worker thread -> it has to access our private resources
     friend class SocketWorkerThread;
     
-	/// constructor > create epoll device handle
-	SocketMgr()
-	{
-        m_eventSize     = 0;
-		m_kq_fd         = kqueue();
-		if(m_kq_fd == -1)
-		{
-			printf("Could not create kqueue fd.");
-			exit(-1);
-		}
-	}
+	/// constructor > create kqueue device handle
+	explicit SocketMgr();
 	
-    /// destructor > destroy epoll handle
-    ~SocketMgr()
-    {
-        // close epoll handle
-        close(m_kq_fd);
-    }
+    /// destructor > destroy kqueue handle
+    ~SocketMgr();
     
     /// add a new socket to the epoll set and to the fd mapping
     void AddSocket(BaseSocket * pSocket, bool listenSocket);
@@ -80,20 +64,17 @@ public:
     void SpawnWorkerThreads();
     
 	//epoll fd
-	int GetKqFd()           { return m_kq_fd; }
-    int GetEventSize()      { return m_eventSize; }
+	int GetKqFd() const { return m_kq_fd; }
 };
 
 class SocketWorkerThread : public ThreadContext
 {
-public:
-    SocketWorkerThread();
-    ~SocketWorkerThread();
-    
+public:    
+    //ThreadContext
     bool run();
     
 private:
-    struct kevent 	*m_pEvents;
+    struct kevent m_rEvents[MAX_EVENTS];
 };
 
 #define sSocketMgr SocketMgr::getSingleton()

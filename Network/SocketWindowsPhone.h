@@ -41,7 +41,6 @@ public:
 	/** Returns the socket's file descriptor
 	*/
 	SOCKET GetFd() const        { return m_fd; }
-	void SetFd(SOCKET fd)       { m_fd = fd; }
 
 	/** Open a connection to another machine.
 	*/
