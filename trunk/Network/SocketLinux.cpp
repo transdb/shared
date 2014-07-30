@@ -49,49 +49,44 @@ Socket::Socket(SOCKET fd, size_t readbuffersize, size_t writebuffersize) : m_rea
 	m_connected 	= false;
 }
 
-bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
+Socket::~Socket()
 {
-	struct hostent * ci = gethostbyname(Address);
-	if(ci == NULL)
-		return false;
+	
+}
 
-	m_peer.sin_family = ci->h_addrtype;
-	m_peer.sin_port = ntohs((u_short)Port);
-    m_peer.sin_family = AF_INET;
-	memcpy(&m_peer.sin_addr.s_addr, ci->h_addr_list[0], ci->h_length);
-
+bool BaseSocket::Connect(SOCKET fd, const sockaddr_in *peer, uint32 timeout)
+{
     //set non-blocking
-    SocketOps::Nonblocking(m_fd);
-
+    SocketOps::Nonblocking(fd);
+    
     //try to connect
-    int result = connect(m_fd, (const sockaddr*)&m_peer, sizeof(sockaddr_in));
+    int result = connect(fd, (const sockaddr*)peer, sizeof(sockaddr_in));
     if(result == 0 || errno != EINPROGRESS)
     {
         Log.Error(__FUNCTION__, "result == %d, errno = %d", result, errno);
         std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
         return false;
     }
-
+    
     //async socket connect
     int count;
     fd_set fdset;
     struct timeval tv;
     bool oResult = false;
-
+    
     FD_ZERO(&fdset);
-    FD_SET(m_fd, &fdset);
+    FD_SET(fd, &fdset);
     tv.tv_sec = timeout;
     tv.tv_usec = 0;
-
-    count = select(m_fd + 1, NULL, &fdset, NULL, &tv);
+    
+    count = select(fd + 1, NULL, &fdset, NULL, &tv);
     if(count == 1)
     {
         int so_error;
         socklen_t len = sizeof(so_error);
-        getsockopt(m_fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
+        getsockopt(fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
         if(so_error == 0)
         {
-            _OnConnect();
             oResult = true;
         }
         else
@@ -100,11 +95,6 @@ bool Socket::Connect(const char * Address, uint32 Port, uint32 timeout)
         }
     }
     return oResult;
-}
-
-Socket::~Socket()
-{
-	
 }
 
 void Socket::Accept(const sockaddr_in * peer)

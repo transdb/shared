@@ -41,7 +41,6 @@ public:
 	/** Returns the socket's file descriptor
 	 */
 	SOCKET GetFd() const        { return m_fd; }
-    void SetFd(SOCKET fd)       { m_fd = fd; }
     
 	/** Locks the socket's write buffer so you can begin a write operation
 	 */

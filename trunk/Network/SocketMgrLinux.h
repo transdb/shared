@@ -35,11 +35,10 @@ class SocketMgr : public Singleton<SocketMgr>
 private:
     /// /dev/epoll instance handle
     int 				m_epoll_fd;
-    int					m_eventSize;
 
     // fd -> pointer binding.
 	volatile SocketSet	m_sockets;
-	std::mutex				m_socketLock;
+	std::mutex			m_socketLock;
 
 public:
 
@@ -47,27 +46,10 @@ public:
     friend class SocketWorkerThread;
 
 	/// constructor > create epoll device handle
-	SocketMgr()
-	{
-        int numOfCPU = (int)sysconf(_SC_NPROCESSORS_ONLN);
-        if(numOfCPU <= 0)
-            numOfCPU = 1;
-
-        m_eventSize = numOfCPU * 2;
-		m_epoll_fd = epoll_create(m_eventSize);
-		if(m_epoll_fd == -1)
-		{
-			printf("Could not create epoll fd (/dev/epoll).");
-			exit(-1);
-		}
-	}
+	explicit SocketMgr();
 	
     /// destructor > destroy epoll handle
-    ~SocketMgr()
-    {
-        // close epoll handle
-        close(m_epoll_fd);
-    }	
+    ~SocketMgr();
 
     /// add a new socket to the epoll set and to the fd mapping
     void AddSocket(BaseSocket * pSocket, bool listenSocket);
@@ -88,20 +70,17 @@ public:
     void SpawnWorkerThreads();
 		
 	//epoll fd
-	int GetEpollFd()		{ return m_epoll_fd; }
-	int GetEventSize()      { return m_eventSize; }
+	int GetEpollFd() const  { return m_epoll_fd; }
 };
 
 class SocketWorkerThread : public ThreadContext
 {
 public:
-    SocketWorkerThread();
-    ~SocketWorkerThread();
-
+    //ThreadContext
     bool run();
 
 private:
-    struct epoll_event 	*m_pEvents;
+    struct epoll_event m_rEvents[MAX_EVENTS];
 };
 
 #define sSocketMgr SocketMgr::getSingleton()

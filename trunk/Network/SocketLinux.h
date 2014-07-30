@@ -41,11 +41,6 @@ public:
 	/** Returns the socket's file descriptor
 	 */
 	SOCKET GetFd() const        { return m_fd; }
-	void SetFd(SOCKET fd)       { m_fd = fd; }
-
-	/** Open a connection to another machine.
-	 */ 
-	bool Connect(const char * Address, uint32 Port, uint32);
 
 	/** Locks the socket's write buffer so you can begin a write operation
 	 */

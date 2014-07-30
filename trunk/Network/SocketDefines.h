@@ -48,6 +48,7 @@
 #endif
 
 #define SOCKET_SEND_RECV_TIMEOUT 15
+#define MAX_EVENTS 32
 
 /* IOCP Defines */
 

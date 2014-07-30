@@ -23,7 +23,22 @@
 
 initialiseSingleton(SocketMgr);
 
-void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
+SocketMgr::SocketMgr()
+{
+    m_epoll_fd = epoll_create(MAX_EVENTS);
+    if(m_epoll_fd == -1)
+    {
+        Log.Error(__FUNCTION__, "Could not create epoll fd (/dev/epoll).");
+        exit(EXIT_FAILURE);
+    }
+}
+
+SocketMgr::~SocketMgr()
+{
+    close(m_epoll_fd);
+}
+
+void SocketMgr::AddSocket(BaseSocket *pSocket, bool listenSocket)
 {
 	//add socket to storage
 	LockingPtr<SocketSet> pSockets(m_sockets, m_socketLock);
@@ -44,7 +59,7 @@ void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
 	}
 }
 
-void SocketMgr::RemoveSocket(BaseSocket * pSocket)
+void SocketMgr::RemoveSocket(BaseSocket *pSocket)
 {
 	//remove socket from storage
 	LockingPtr<SocketSet> pSockets(m_sockets, m_socketLock);	
@@ -56,8 +71,6 @@ void SocketMgr::RemoveSocket(BaseSocket * pSocket)
 		// Remove from epoll list.
 		struct epoll_event ev;
 		memset(&ev, 0, sizeof(epoll_event));
-		ev.data.ptr = pSocket;
-		ev.events 	= (pSocket->Writable()) ? EPOLLOUT : EPOLLIN;
 
 		if(epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, pSocket->GetFd(), &ev))
 		{
@@ -97,17 +110,6 @@ void SocketMgr::SpawnWorkerThreads()
     ThreadPool.ExecuteTask(new SocketWorkerThread());
 }
 
-SocketWorkerThread::SocketWorkerThread()
-{
-    long numOfEvents = sSocketMgr.GetEventSize();
-    m_pEvents = new struct epoll_event[numOfEvents];
-}
-
-SocketWorkerThread::~SocketWorkerThread()
-{
-    delete [] m_pEvents;
-}
-
 bool SocketWorkerThread::run()
 {
     CommonFunctions::SetThreadName("SocketWorker thread");    
@@ -116,31 +118,30 @@ bool SocketWorkerThread::run()
     int fd_count;
     Socket * pSocket;
 	int epoll_fd = sSocketMgr.GetEpollFd();
-	int maxevents = sSocketMgr.GetEventSize();
 			
     while(m_threadRunning)
     {
-        fd_count = epoll_wait(epoll_fd, m_pEvents, maxevents, 10000);
+        fd_count = epoll_wait(epoll_fd, m_rEvents, MAX_EVENTS, 10000);
         for(i = 0; i < fd_count; ++i)
         {
-			pSocket = static_cast<Socket*>(m_pEvents[i].data.ptr);
+			pSocket = static_cast<Socket*>(m_rEvents[i].data.ptr);
 			if(pSocket == NULL)
 			{
-				Log.Error(__FUNCTION__, "epoll returned invalid fd %u", m_pEvents[i].data.fd);
+				Log.Error(__FUNCTION__, "epoll returned invalid fd %u", m_rEvents[i].data.fd);
 				continue;
 			}
 			
-			if((m_pEvents[i].events & EPOLLHUP) || (m_pEvents[i].events & EPOLLERR))
+			if((m_rEvents[i].events & EPOLLHUP) || (m_rEvents[i].events & EPOLLERR))
 			{
 				pSocket->OnError(errno);
 			}
-			else if(m_pEvents[i].events & EPOLLIN)
+			else if(m_rEvents[i].events & EPOLLIN)
 			{
 				/* Len is unknown at this point. */
 				pSocket->ReadCallback(0);
 				
 			}
-			else if(m_pEvents[i].events & EPOLLOUT)
+			else if(m_rEvents[i].events & EPOLLOUT)
 			{
 				pSocket->BurstBegin();						//lock
 				pSocket->WriteCallback(0);					//perform send
@@ -158,7 +159,10 @@ bool SocketWorkerThread::run()
                 }
 				pSocket->BurstEnd(); 						//Unlock
 			}
-        }       
+        }
+        
+        //update socket collector
+        sSocketGarbageCollector.Update();
     }
     return true;
 }

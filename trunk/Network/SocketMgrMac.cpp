@@ -23,6 +23,21 @@
 
 initialiseSingleton(SocketMgr);
 
+SocketMgr::SocketMgr()
+{
+    m_kq_fd = kqueue();
+    if(m_kq_fd == -1)
+    {
+        Log.Error(__FUNCTION__, "Could not create kqueue fd.");
+        exit(EXIT_FAILURE);
+    }
+}
+
+SocketMgr::~SocketMgr()
+{
+    close(m_kq_fd);
+}
+
 void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
 {
 	//add socket to storage
@@ -108,24 +123,7 @@ void SocketMgr::CloseAll()
 
 void SocketMgr::SpawnWorkerThreads()
 {
-    int numOfCPU = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    if(numOfCPU <= 0)
-        numOfCPU = 1;
-    
-    m_eventSize = numOfCPU * 2;
-    
     ThreadPool.ExecuteTask(new SocketWorkerThread());
-}
-
-SocketWorkerThread::SocketWorkerThread()
-{
-    long numOfEvents = sSocketMgr.GetEventSize();
-    m_pEvents = new struct kevent[numOfEvents];
-}
-
-SocketWorkerThread::~SocketWorkerThread()
-{
-    delete [] m_pEvents;
 }
 
 bool SocketWorkerThread::run()
@@ -138,36 +136,35 @@ bool SocketWorkerThread::run()
     Socket *pSocket;
     int fd_count;
     int kq_fd = sSocketMgr.GetKqFd();
-    int maxevents = sSocketMgr.GetEventSize();
     int i;
     
     while(m_threadRunning)
     {
-        fd_count = kevent(kq_fd, 0, 0, m_pEvents, maxevents, &rTimeout);
+        fd_count = kevent(kq_fd, 0, 0, m_rEvents, MAX_EVENTS, &rTimeout);
         for(i = 0;i < fd_count;++i)
         {
-            pSocket = static_cast<Socket*>(m_pEvents[i].udata);
+            pSocket = static_cast<Socket*>(m_rEvents[i].udata);
             if(pSocket == NULL)
             {
-                Log.Error(__FUNCTION__, "kevent returned invalid fd:%lu", m_pEvents[i].ident);
+                Log.Error(__FUNCTION__, "kevent returned invalid fd:%lu", m_rEvents[i].ident);
                 continue;
             }
             
-            if(m_pEvents[i].flags & EV_EOF)
+            if(m_rEvents[i].flags & EV_EOF)
             {
-                Log.Error(__FUNCTION__, "EV_EOF flags:%u fflags:%u", m_pEvents[i].flags, m_pEvents[i].fflags);
+                Log.Error(__FUNCTION__, "EV_EOF flags:%u fflags:%u", m_rEvents[i].flags, m_rEvents[i].fflags);
                 pSocket->OnError(errno);
                 continue;
             }
             
-            if(m_pEvents[i].flags & EV_ERROR)
+            if(m_rEvents[i].flags & EV_ERROR)
             {
-                Log.Error(__FUNCTION__, "EV_ERROR flags:%u fflags:%u", m_pEvents[i].flags, m_pEvents[i].fflags);
+                Log.Error(__FUNCTION__, "EV_ERROR flags:%u fflags:%u", m_rEvents[i].flags, m_rEvents[i].fflags);
                 pSocket->OnError(errno);
                 continue;
             }
             
-            switch(m_pEvents[i].filter)
+            switch(m_rEvents[i].filter)
             {
                 case EVFILT_READ:
                 {
@@ -194,6 +191,9 @@ bool SocketWorkerThread::run()
                 }break;
             }
         }
+        
+        //update socket collector
+        sSocketGarbageCollector.Update();
     }
     
     return true;
