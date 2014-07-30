@@ -42,10 +42,6 @@ public:
 	*/
 	SOCKET GetFd() const        { return m_fd; }
 
-	/** Open a connection to another machine.
-	*/
-	bool Connect(const char * Address, uint32 Port, uint32 timeout);
-
 	/** Locks the socket's write buffer so you can begin a write operation
 	*/
 	void BurstBegin()	{ m_writeMutex.lock(); }
