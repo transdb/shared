@@ -27,6 +27,7 @@
 #include "SocketOps.h"
 
 #ifdef CONFIG_USE_IOCP
+	#include "BaseSocket.h"
 	#include "SocketWindows.h"
 	#include "SocketMgrWin32.h"
 	#include "ListenSocketWin32.h"

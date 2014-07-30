@@ -109,7 +109,7 @@ Socket::~Socket()
 
 void Socket::Accept(const sockaddr_in * peer)
 {
-	memcpy(&m_peer, peer, sizeof(sockaddr));
+	memcpy(&m_peer, peer, sizeof(sockaddr_in));
 	_OnConnect();
 }
 
@@ -202,7 +202,7 @@ void Socket::Delete()
 
 void Socket::OnError(int errcode)
 {
-	Log.Debug(__FUNCTION__, "Error number: %u", errcode);
+	Log.Error(__FUNCTION__, "Error number: %u", errcode);
 	Disconnect();
 }
 
