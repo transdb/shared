@@ -27,7 +27,7 @@ void GeewaPacket::AddHTTPData(char *pData, size_t dataSize)
     http_parser_execute(&m_rHttp_parser, &m_rHttp_parser_settings, pData, dataSize);
 }
 
-int GeewaPacket_on_body(http_parser *pParser, const char *at, size_t length)
+static int GeewaPacket_on_body(http_parser *pParser, const char *at, size_t length)
 {
     GeewaPacket *pGeewaPacket = static_cast<GeewaPacket*>(pParser->data);
     //append dat to buffer
@@ -35,7 +35,7 @@ int GeewaPacket_on_body(http_parser *pParser, const char *at, size_t length)
     return 0;
 }
 
-int GeewaPacket_on_message_complete(http_parser *pParser)
+static int GeewaPacket_on_message_complete(http_parser *pParser)
 {
     GeewaPacket *pGeewaPacket = static_cast<GeewaPacket*>(pParser->data);
     //set that we have all data

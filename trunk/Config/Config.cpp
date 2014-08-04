@@ -34,13 +34,13 @@ ConfigFile::~ConfigFile()
 	
 }
 
-void remove_spaces(std::string& str)
+static void remove_spaces(std::string& str)
 {
 	while(str.size() && (*str.begin() == ' ' || *str.begin() == '\t'))
 		str.erase(str.begin());
 }
 
-void remove_all_spaces(std::string& str)
+static void remove_all_spaces(std::string& str)
 {
 	std::string::size_type off = str.find(" ");
 	while(off != std::string::npos)
@@ -57,7 +57,7 @@ void remove_all_spaces(std::string& str)
 	}
 }
 
-bool is_comment(std::string& str, bool * in_multiline_quote)
+static bool is_comment(std::string& str, bool * in_multiline_quote)
 {
 	std::string stemp = str;
 	remove_spaces(stemp);
@@ -86,7 +86,7 @@ bool is_comment(std::string& str, bool * in_multiline_quote)
 	return false;
 }
 
-void apply_setting(std::string & str, ConfigSetting & setting)
+static void apply_setting(std::string & str, ConfigSetting & setting)
 {
 	setting.AsString = str;
 	setting.AsInt = atoi(str.c_str());
