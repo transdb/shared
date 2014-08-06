@@ -497,7 +497,7 @@ void FileLog::getLogFileContent(ByteBuffer &rContent)
     fileSize = IO::ftell(m_hFile);
     IO::fseek(m_hFile, 0, IO::IO_SEEK_SET);
     
-    rContent.resize(fileSize);
+    rContent.resize((size_t)fileSize);
     IO::fread((void*)rContent.contents(), rContent.size(), m_hFile);
 }
 
