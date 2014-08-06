@@ -26,6 +26,10 @@
 class BaseSocket
 {
 public:
+    /** Destructor
+     */
+    virtual ~BaseSocket() {}
+    
 	/** Returns the socket's file descriptor
 	 */
 	virtual SOCKET GetFd() const = 0;
