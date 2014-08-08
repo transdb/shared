@@ -53,12 +53,12 @@ public:
 	void write(const char* format, ...);
     void getLogFileContent(ByteBuffer &rContent);
     
- 	INLINE bool IsOpen()
+ 	INLINE bool IsOpen() const
     {
         return (m_hFile != INVALID_HANDLE_VALUE);
     }
     
-    INLINE std::string &GetFileName()
+    INLINE std::string GetFileName() const
     {
         return m_filename;
     }
