@@ -193,7 +193,7 @@ void Socket::Delete()
 
 void Socket::OnError(int errcode)
 {    
-    Log.Error(__FUNCTION__, "Error number: %u", errcode);
+    Log.Debug(__FUNCTION__, "Error number: %u", errcode);
 	Disconnect();
 }
 
