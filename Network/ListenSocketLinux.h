@@ -144,13 +144,12 @@ public:
     
     /** Are we connected?
      */
-	bool IsConnected() const  { return m_connected; }
-	bool IsDeleted() const    { return m_deleted; }
+	bool IsConnected() const    { return m_connected; }
+	bool IsDeleted() const      { return m_deleted; }
     
 	/** Returns the socket's file descriptor
 	 */
 	SOCKET GetFd() const        { return m_fd; }
-    void SetFd(SOCKET fd)       { m_fd = fd; }
     
 private:
 	/** This socket's file descriptor
