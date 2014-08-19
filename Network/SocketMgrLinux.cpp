@@ -162,9 +162,6 @@ bool SocketWorkerThread::run()
 				pSocket->BurstEnd(); 						//Unlock
 			}
         }
-        
-        //update socket collector
-        sSocketGarbageCollector.Update();
     }
     return true;
 }
