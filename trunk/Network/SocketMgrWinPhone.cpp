@@ -150,9 +150,6 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 		}
 		//unlock socket set
 		m_socketLock.unlock();
-        
-		//update socket collector
-		sSocketGarbageCollector.Update();
 
 		//wait
 		pContext->Wait(100);

@@ -191,9 +191,6 @@ bool SocketWorkerThread::run()
                 }break;
             }
         }
-        
-        //update socket collector
-        sSocketGarbageCollector.Update();
     }
     
     return true;
