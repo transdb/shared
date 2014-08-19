@@ -112,7 +112,7 @@ bool Socket::BurstSend(const void * data, size_t bytes)
 
 void Socket::OnError(int errcode)
 {
-	Log.Error(__FUNCTION__, "Error number: %u", errcode);
+	Log.Debug(__FUNCTION__, "Error number: %u", errcode);
 	Disconnect();
 }
 
