@@ -71,6 +71,8 @@ void SocketMgr::RemoveSocket(BaseSocket *pSocket)
 		// Remove from epoll list.
 		struct epoll_event ev;
 		memset(&ev, 0, sizeof(epoll_event));
+		ev.data.ptr = pSocket;
+		ev.events 	= (pSocket->Writable()) ? EPOLLOUT : EPOLLIN;
 
 		if(epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, pSocket->GetFd(), &ev))
 		{
