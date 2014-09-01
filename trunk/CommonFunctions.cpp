@@ -177,7 +177,7 @@ std::vector<std::string> CommonFunctions::StrSplit(const std::string & src, cons
     
     item = src.substr(start, end);
     tokens.push_back(item);
-	return tokens;
+	return std::move(tokens);
 }
 
 void CommonFunctions::replace(std::string &str, const char* find, const char* rep, uint32 limit)
