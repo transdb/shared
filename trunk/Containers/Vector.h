@@ -88,7 +88,13 @@ public:
             //set capacity
             m_capacity = newCapacity;
             // resize buffer
-            m_pBuff = (T*)realloc(m_pBuff, sizeof(T) * m_capacity);
+            void *pNewBuff = realloc(m_pBuff, sizeof(T) * m_capacity);
+            if(pNewBuff == NULL)
+            {
+                free((void*)m_pBuff);
+                throw std::bad_alloc();
+            }
+            m_pBuff = (T*)pNewBuff;
         }
     }
     
@@ -177,7 +183,10 @@ public:
 			if(m_capacity)
 			{
 				m_pBuff = (T*)malloc(sizeof(T) * m_capacity);
-				assert(m_pBuff);
+                if(m_pBuff == NULL)
+                {
+                    throw std::bad_alloc();
+                }
 				memcpy(m_pBuff, v.m_pBuff, sizeof(T) * m_size);
 			}
 		}

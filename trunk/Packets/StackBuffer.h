@@ -180,11 +180,11 @@ public:
 	StackBuffer& operator >> (std::string & dest)
 	{
 		dest.clear();
-		char c;
 		for(;;)
 		{
-			c = Read<char>();
-			if(c == 0) break;
+			char c = Read<char>();
+			if(c == 0)
+                break;
 			dest += c;
 		}
 		return *this;
