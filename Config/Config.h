@@ -62,9 +62,15 @@ public:
 	bool GetFloat(const char * block, const char* name, float *value);
 	float GetFloatDefault(const char * block, const char* name, const float def);
 	float GetFloatVA(const char * block, float def, const char* name, ...);
+    
+    INLINE const std::string &GetConfigFilePath() const
+    {
+        return m_rFilePath;
+    }
 
 private:
-	ConfigSettings    m_settings;
+	ConfigSettings  m_settings;
+    std::string     m_rFilePath;
 };
 
 

@@ -118,6 +118,10 @@ bool ConfigFile::SetSource(const char *file)
 	/* open the file */
 	if(file != 0)
 	{
+        //save patj to config file
+        m_rFilePath = std::string(file);
+        
+        //start parsing config file
 		std::ifstream inputData(file);
 		if(!inputData.is_open())
 		{
