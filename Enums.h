@@ -92,8 +92,8 @@ namespace SocketEnums
         C_MSG_DEFRAGMENT_FREESPACE          = 29,
         S_MSG_DEFRAGMENT_FREESPACE          = 30,
         
-        C_MSG_SQL_QUERY                     = 31,
-        S_MSG_SQL_QUERY                     = 32,
+        C_MSG_EXEC_PYTHON_SCRIPT            = 31,
+        S_MSG_EXEC_PYTHON_SCRIPT            = 32,
 
 		OP_NUM
 	};
