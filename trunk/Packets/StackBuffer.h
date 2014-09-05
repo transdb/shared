@@ -36,21 +36,33 @@ public:
 
 	/** Constructor, sets buffer pointers and zeros write/read positions.
 	 */
-	StackBuffer(uint8* ptr, size_t sz) : m_stackBuffer(ptr), m_bufferPointer(&m_stackBuffer[0]), m_heapBuffer(0), m_readPos(0), m_writePos(0), m_space(sz) {}
+	explicit StackBuffer(uint8* ptr, size_t sz) : m_stackBuffer(ptr), m_bufferPointer(&m_stackBuffer[0]), m_heapBuffer(0), m_readPos(0), m_writePos(0), m_space(sz) {}
 
 	/** Destructor, frees heap buffer if it exists
 	 */
-	~StackBuffer() { if(m_heapBuffer) free(m_heapBuffer); }
+	~StackBuffer()
+    {
+        if(m_heapBuffer)
+        {
+            free(m_heapBuffer);
+        }
+    }
 
 	/** Re-allocates the buffer on the heap. This allows it to expand past the original specified size.
 	 * This is only a failsafe and should be avoided at all costs, as it is quite heavy. 
 	 */
 	void ReallocateOnHeap()
 	{
-		printf("!!!!!!! WARNING! STACK BUFFER OVERFLOW !!!!!!!!!!!!!\n");
+		Log.Error(__FUNCTION__, "!!!!!!! WARNING! STACK BUFFER OVERFLOW !!!!!!!!!!!!!");
 		if(m_heapBuffer)			// Reallocate with 200 bytes larger size
 		{
-			m_heapBuffer = (uint8*)realloc(m_heapBuffer, 200 + m_space);
+            void *pNewMem = realloc(m_heapBuffer, 200 + m_space);
+            if(pNewMem == NULL)
+            {
+                free(m_heapBuffer);
+                throw std::bad_alloc();
+            }
+			m_heapBuffer = (uint8*)pNewMem;
 			m_bufferPointer = m_heapBuffer;
 			m_space += 200;
 		}
