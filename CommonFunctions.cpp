@@ -27,10 +27,10 @@ int CommonFunctions::decompressGzip(const uint8 *pData,
                                     int zlibBufferSize /*= 128*1024*/)
 {
     //buffer for zlib
-    std::unique_ptr<Bytef[]> rOutBuff = std::unique_ptr<Bytef[]>(new Bytef[zlibBufferSize]);
+    Bytef *pOutBuff = new Bytef[zlibBufferSize];
     
     //we need clean buffer
-    rBuffOut.clear();
+    rBuffOut.resize(0);
     
     //set up stream
     z_stream stream;
@@ -39,7 +39,10 @@ int CommonFunctions::decompressGzip(const uint8 *pData,
     //init for gzip
     int ret = inflateInit2(&stream, GZIP_ENCODING+MAX_WBITS);
     if(ret != Z_OK)
+    {
+        delete [] pOutBuff;
         return ret;
+    }
     
     /* decompress until deflate stream ends or end of file */
     stream.avail_in = static_cast<uInt>(dataLen);
@@ -49,7 +52,7 @@ int CommonFunctions::decompressGzip(const uint8 *pData,
     do
     {
         stream.avail_out = zlibBufferSize;
-        stream.next_out = rOutBuff.get();
+        stream.next_out = pOutBuff;
         ret = inflate(&stream, Z_FINISH);
         switch (ret)
         {
@@ -58,17 +61,19 @@ int CommonFunctions::decompressGzip(const uint8 *pData,
             case Z_DATA_ERROR:
             case Z_MEM_ERROR:
             {
+                delete [] pOutBuff;
                 inflateEnd(&stream);
                 return ret;
             }
         }
         
         uInt processed = zlibBufferSize - stream.avail_out;
-        rBuffOut.append(rOutBuff.get(), processed);
+        rBuffOut.append(pOutBuff, processed);
         
     }while(stream.avail_out == 0);
     
     /* clean up and return */
+    delete [] pOutBuff;
     inflateEnd(&stream);
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
@@ -80,10 +85,10 @@ int CommonFunctions::compressGzip(int compressionLevel,
                                   int zlibBufferSize /*= 128*1024*/)
 {
     //buffer for zlib
-    std::unique_ptr<Bytef[]> rOutBuff = std::unique_ptr<Bytef[]>(new Bytef[zlibBufferSize]);
+    Bytef *pOutBuff = new Bytef[zlibBufferSize];
     
     //we need clean buffer
-    rBuffOut.clear();
+    rBuffOut.resize(0);
     
     //set up stream
     z_stream stream;
@@ -92,7 +97,10 @@ int CommonFunctions::compressGzip(int compressionLevel,
     //init for gzip
     int ret = deflateInit2(&stream, compressionLevel, Z_DEFLATED, GZIP_ENCODING+MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     if(ret != Z_OK)
+    {
+        delete [] pOutBuff;
         return ret;
+    }
     
     //setup input informations
     stream.next_in = (Bytef*)pData;
@@ -101,7 +109,7 @@ int CommonFunctions::compressGzip(int compressionLevel,
     do
     {
         stream.avail_out = zlibBufferSize;
-        stream.next_out = rOutBuff.get();
+        stream.next_out = pOutBuff;
         ret = deflate(&stream, Z_FINISH);
         switch (ret)
         {
@@ -110,17 +118,19 @@ int CommonFunctions::compressGzip(int compressionLevel,
             case Z_DATA_ERROR:
             case Z_MEM_ERROR:
             {
+                delete [] pOutBuff;
                 deflateEnd(&stream);
                 return ret;
             }
         }
         
         uInt processed = zlibBufferSize - stream.avail_out;
-        rBuffOut.append(rOutBuff.get(), processed);
+        rBuffOut.append(pOutBuff, processed);
         
     }while(stream.avail_out == 0);
     
     /* clean up and return */
+    delete [] pOutBuff;
     deflateEnd(&stream);
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
