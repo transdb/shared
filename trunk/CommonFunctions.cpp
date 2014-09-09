@@ -20,14 +20,14 @@
 #include "CommonFunctions.h"
 
 #define GZIP_ENCODING				16
-#define ZLIB_CHUNK                  16384
 
-int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::decompressGzip(const uint8 *pData,
+                                    size_t dataLen,
+                                    ByteBuffer &rBuffOut,
+                                    int zlibBufferSize /*= 128*1024*/)
 {
-    int ret;
-    size_t processed;
-    uInt buffSize = ZLIB_CHUNK;
-    uint8 outBuff[ZLIB_CHUNK];
+    //buffer for zlib
+    std::unique_ptr<Bytef[]> rOutBuff = std::unique_ptr<Bytef[]>(new Bytef[zlibBufferSize]);
     
     //we need clean buffer
     rBuffOut.clear();
@@ -37,7 +37,7 @@ int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuff
     memset(&stream, 0, sizeof(z_stream));
     
     //init for gzip
-    ret = inflateInit2(&stream, GZIP_ENCODING+MAX_WBITS);
+    int ret = inflateInit2(&stream, GZIP_ENCODING+MAX_WBITS);
     if(ret != Z_OK)
         return ret;
     
@@ -48,8 +48,8 @@ int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuff
     /* run inflate() on input until output buffer not full */
     do
     {
-        stream.avail_out = buffSize;
-        stream.next_out = outBuff;
+        stream.avail_out = zlibBufferSize;
+        stream.next_out = rOutBuff.get();
         ret = inflate(&stream, Z_FINISH);
         switch (ret)
         {
@@ -63,8 +63,8 @@ int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuff
             }
         }
         
-        processed = buffSize - stream.avail_out;
-        rBuffOut.append(outBuff, processed);
+        uInt processed = zlibBufferSize - stream.avail_out;
+        rBuffOut.append(rOutBuff.get(), processed);
         
     }while(stream.avail_out == 0);
     
@@ -73,12 +73,14 @@ int CommonFunctions::decompressGzip(const uint8 *pData, size_t dataLen, ByteBuff
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-int CommonFunctions::compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut)
+int CommonFunctions::compressGzip(int compressionLevel,
+                                  const uint8 *pData,
+                                  size_t dataLen,
+                                  ByteBuffer &rBuffOut,
+                                  int zlibBufferSize /*= 128*1024*/)
 {
-    int ret;
-    uint32 processed;
-    uInt buffSize = ZLIB_CHUNK;
-    uint8 outBuff[ZLIB_CHUNK];
+    //buffer for zlib
+    std::unique_ptr<Bytef[]> rOutBuff = std::unique_ptr<Bytef[]>(new Bytef[zlibBufferSize]);
     
     //we need clean buffer
     rBuffOut.clear();
@@ -88,7 +90,7 @@ int CommonFunctions::compressGzip(int compressionLevel, const uint8 *pData, size
     memset(&stream, 0, sizeof(z_stream));
     
     //init for gzip
-    ret = deflateInit2(&stream, compressionLevel, Z_DEFLATED, GZIP_ENCODING+MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+    int ret = deflateInit2(&stream, compressionLevel, Z_DEFLATED, GZIP_ENCODING+MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     if(ret != Z_OK)
         return ret;
     
@@ -98,8 +100,8 @@ int CommonFunctions::compressGzip(int compressionLevel, const uint8 *pData, size
     
     do
     {
-        stream.avail_out = buffSize;
-        stream.next_out = outBuff;
+        stream.avail_out = zlibBufferSize;
+        stream.next_out = rOutBuff.get();
         ret = deflate(&stream, Z_FINISH);
         switch (ret)
         {
@@ -113,8 +115,8 @@ int CommonFunctions::compressGzip(int compressionLevel, const uint8 *pData, size
             }
         }
         
-        processed = buffSize - stream.avail_out;
-        rBuffOut.append(outBuff, processed);
+        uInt processed = zlibBufferSize - stream.avail_out;
+        rBuffOut.append(rOutBuff.get(), processed);
         
     }while(stream.avail_out == 0);
     
