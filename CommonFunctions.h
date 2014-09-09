@@ -27,8 +27,8 @@
 class CommonFunctions
 {
 public:
-	static int decompressGzip(const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut);
-	static int compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut);
+	static int decompressGzip(const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut, int zlibBufferSize = 128*1024);
+	static int compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, ByteBuffer &rBuffOut, int zlibBufferSize = 128*1024);
     static INLINE bool isGziped(const uint8 *pData)
     {
         return (pData[0] == 0x1f) && (pData[1] == 0x8b);
