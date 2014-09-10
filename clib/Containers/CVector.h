@@ -6,7 +6,7 @@
 //
 
 #ifndef CVECTOR_H
-#define CVECTOR_H
+#define CVECTOR_H 1
 
 #ifdef __cplusplus
 extern "C" {

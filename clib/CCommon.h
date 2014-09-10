@@ -6,7 +6,7 @@
 //
 
 #ifndef CCOMMON_H
-#define CCOMMON_H
+#define CCOMMON_H 1
 
 #ifdef __cplusplus
 extern "C" {
