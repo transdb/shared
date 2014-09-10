@@ -6,7 +6,7 @@
 //
 
 #ifndef CDEFINES_H
-#define CDEFINES_H
+#define CDEFINES_H 1
 
 #ifdef __cplusplus
 extern "C" {
