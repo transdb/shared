@@ -8,6 +8,10 @@
 #ifndef CDEFINES_H
 #define CDEFINES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -43,4 +47,8 @@
     typedef int         HANDLE;
 #endif
 
+#ifdef __cplusplus
+}
+#endif
+    
 #endif
