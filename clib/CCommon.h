@@ -19,11 +19,11 @@ extern "C" {
 
 /**
  */
-int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, CByteBuffer *pBuffOut, int zlibBufferSize);
+int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, bbuff *buffOut, int zlibBufferSize);
 
 /**
  */
-int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, CByteBuffer *pBuffOut, int zlibBufferSize);
+int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, bbuff *buffOut, int zlibBufferSize);
 
 /**
  */

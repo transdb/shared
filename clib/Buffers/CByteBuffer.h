@@ -14,42 +14,42 @@ extern "C" {
 
 #include "../CDefines.h"
 
-typedef struct
+typedef struct CByteBuffer
 {
-    uint8   *m_storage;
-    size_t  m_size;
-    size_t  m_capacity;
-	size_t  m_rpos;
-	size_t  m_wpos;
-} CByteBuffer;
+    uint8   *storage;
+    size_t  size;
+    size_t  capacity;
+	size_t  rpos;
+	size_t  wpos;
+} bbuff;
 
-/**
+/** Create bytebuffer, storage is not allocated
  */
-CByteBuffer *CByteBuffer_create();
+bbuff *bbuff_create();
 
-/**
+/** Destroy bytebuffer and free storage
  */
-void CByteBuffer_destroy(CByteBuffer *pCByteBuffer);
+void bbuff_destroy(bbuff *bbuff);
     
-/**
+/** Reserve space in storage
  */
-void CByteBuffer_reserve(CByteBuffer *pCByteBuffer, size_t ressize);
+void bbuff_reserve(bbuff *bbuff, size_t ressize);
     
-/**
+/** Resize storage
  */
-void CByteBuffer_resize(CByteBuffer *pCByteBuffer, size_t newsize);
+void bbuff_resize(bbuff *bbuff, size_t newsize);
 
-/** 
+/** Append data to bytebuffer
  */
-void CByteBuffer_append(CByteBuffer *pCByteBuffer, const void *pSource, size_t srcSize);
+void bbuff_append(bbuff *bbuff, const void *src, size_t len);
    
-/**
+/** Read data from bytebuffer
  */
-void CByteBuffer_read(CByteBuffer *pCByteBuffer, void *pDestination, size_t len);
+void bbuff_read(bbuff *bbuff, void *dst, size_t len);
     
-/**
+/** Put data to bytebuffer to specified position
  */
-void CByteBuffer_put(CByteBuffer *pCByteBuffer, size_t pos, const void *pSource, size_t srcSize);
+void bbuff_put(bbuff *bbuff, size_t pos, const void *src, size_t len);
     
 #ifdef __cplusplus
 }
