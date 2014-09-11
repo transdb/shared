@@ -17,69 +17,69 @@ bbuff *bbuff_create(void)
     return p;
 }
 
-void bbuff_destroy(bbuff *bbuff)
+void bbuff_destroy(bbuff *self)
 {
-    free(bbuff->storage);
-    free(bbuff);
+    free(self->storage);
+    free(self);
 }
 
-void bbuff_reserve(bbuff *bbuff, size_t ressize)
+void bbuff_reserve(bbuff *self, size_t ressize)
 {
     assert(ressize >= 0);
     
-    if(ressize > bbuff->capacity)
+    if(ressize > self->capacity)
     {
         //set capacity
-        bbuff->capacity = ressize;
+        self->capacity = ressize;
         //resize buffer
-        void *pNewBuffer = realloc(bbuff->storage, ressize);
+        void *pNewBuffer = realloc(self->storage, ressize);
         if(pNewBuffer == NULL)
             return;
         
-        bbuff->storage = pNewBuffer;
+        self->storage = pNewBuffer;
     }
 }
 
-void bbuff_resize(bbuff *bbuff, size_t newsize)
+void bbuff_resize(bbuff *self, size_t newsize)
 {
-    bbuff_reserve(bbuff, newsize);
-    bbuff->size = newsize;
-    bbuff->rpos = 0;
-    bbuff->wpos = bbuff->size;
+    bbuff_reserve(self, newsize);
+    self->size = newsize;
+    self->rpos = 0;
+    self->wpos = self->size;
 }
 
-void bbuff_append(bbuff *bbuff, const void *src, size_t len)
+void bbuff_append(bbuff *self, const void *src, size_t len)
 {
     if(len == 0)
         return;
     
-    if(bbuff->size < (bbuff->wpos + len))
+    if(self->size < (self->wpos + len))
     {
-        bbuff_reserve(bbuff, bbuff->wpos + len);
-        bbuff->size = bbuff->wpos + len;
+        bbuff_reserve(self, self->wpos + len);
+        self->size = self->wpos + len;
     }
     
-    memcpy(bbuff->storage + bbuff->wpos, src, len);
-    bbuff->wpos += len;
+    memcpy(self->storage + self->wpos, src, len);
+    self->wpos += len;
 }
 
-void bbuff_read(bbuff *bbuff, void *dst, size_t len)
+void bbuff_read(bbuff *self, void *dst, size_t len)
 {
-    if((bbuff->rpos + len) <= bbuff->size)
+    if((self->rpos + len) <= self->size)
     {
-        memcpy(dst, bbuff->storage + bbuff->rpos, len);
+        memcpy(dst, self->storage + self->rpos, len);
     }
     else
     {
         memset(dst, 0, len);
     }
-    bbuff->rpos += len;
+    self->rpos += len;
 }
 
-void bbuff_put(bbuff *bbuff, size_t pos, const void *src, size_t len)
+void bbuff_put(bbuff *self, size_t pos, const void *src, size_t len)
 {
-    assert(pos + len <= bbuff->size);
-    memcpy(bbuff->storage + pos, src, len);
+    assert(pos + len <= self->size);
+    memcpy(self->storage + pos, src, len);
 }
 
 
