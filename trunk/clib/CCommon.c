@@ -19,7 +19,7 @@
 
 #define GZIP_ENCODING				16
 
-int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, CByteBuffer *pBuffOut, int zlibBufferSize)
+int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, bbuff *buffOut, int zlibBufferSize)
 {
     //set up stream
     z_stream stream;
@@ -57,7 +57,7 @@ int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, CByteBuffer *pBuf
         }
         
         uInt processed = zlibBufferSize - stream.avail_out;
-        CByteBuffer_append(pBuffOut, pZlibBuff, processed);
+        bbuff_append(buffOut, pZlibBuff, processed);
         
     }while(stream.avail_out == 0);
     
@@ -67,7 +67,7 @@ int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, CByteBuffer *pBuf
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, CByteBuffer *pBuffOut, int zlibBufferSize)
+int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLen, bbuff *buffOut, int zlibBufferSize)
 {
     //set up stream
     z_stream stream;
@@ -104,7 +104,7 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
         }
         
         uInt processed = zlibBufferSize - stream.avail_out;
-        CByteBuffer_append(pBuffOut, pZlibBuff, processed);
+        bbuff_append(buffOut, pZlibBuff, processed);
         
     }while(stream.avail_out == 0);
     

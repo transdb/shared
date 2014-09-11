@@ -12,75 +12,75 @@
 #include <string.h>
 #include "CByteBuffer.h"
 
-CByteBuffer *CByteBuffer_create()
+bbuff *bbuff_create()
 {
-    CByteBuffer *pCByteBuffer = calloc(1, sizeof(CByteBuffer));
-    return pCByteBuffer;
+    bbuff *p = calloc(1, sizeof(bbuff));
+    return p;
 }
 
-void CByteBuffer_destroy(CByteBuffer *pCByteBuffer)
+void bbuff_destroy(bbuff *bbuff)
 {
-    free(pCByteBuffer->m_storage);
-    free(pCByteBuffer);
+    free(bbuff->storage);
+    free(bbuff);
 }
 
-void CByteBuffer_reserve(CByteBuffer *pCByteBuffer, size_t newCapacity)
+void bbuff_reserve(bbuff *bbuff, size_t ressize)
 {
-    assert(newCapacity >= 0);
+    assert(ressize >= 0);
     
-    if(newCapacity > pCByteBuffer->m_capacity)
+    if(ressize > bbuff->capacity)
     {
         //set capacity
-        pCByteBuffer->m_capacity = newCapacity;
+        bbuff->capacity = ressize;
         //resize buffer
-        void *pNewBuffer = realloc(pCByteBuffer->m_storage, newCapacity);
+        void *pNewBuffer = realloc(bbuff->storage, ressize);
         if(pNewBuffer == NULL)
             return;
         
-        pCByteBuffer->m_storage = pNewBuffer;
+        bbuff->storage = pNewBuffer;
     }
 }
 
-void CByteBuffer_resize(CByteBuffer *pCByteBuffer, size_t newSize)
+void bbuff_resize(bbuff *bbuff, size_t newsize)
 {
-    CByteBuffer_reserve(pCByteBuffer, newSize);
-    pCByteBuffer->m_size = newSize;
-    pCByteBuffer->m_rpos = 0;
-    pCByteBuffer->m_wpos = pCByteBuffer->m_size;
+    bbuff_reserve(bbuff, newsize);
+    bbuff->size = newsize;
+    bbuff->rpos = 0;
+    bbuff->wpos = bbuff->size;
 }
 
-void CByteBuffer_append(CByteBuffer *pCByteBuffer, const void *pSource, size_t srcSize)
+void bbuff_append(bbuff *bbuff, const void *src, size_t len)
 {
-    if(srcSize == 0)
+    if(len == 0)
         return;
     
-    if(pCByteBuffer->m_size < (pCByteBuffer->m_wpos + srcSize))
+    if(bbuff->size < (bbuff->wpos + len))
     {
-        CByteBuffer_reserve(pCByteBuffer, pCByteBuffer->m_wpos + srcSize);
-        pCByteBuffer->m_size = pCByteBuffer->m_wpos + srcSize;
+        bbuff_reserve(bbuff, bbuff->wpos + len);
+        bbuff->size = bbuff->wpos + len;
     }
     
-    memcpy(pCByteBuffer->m_storage + pCByteBuffer->m_wpos, pSource, srcSize);
-    pCByteBuffer->m_wpos += srcSize;
+    memcpy(bbuff->storage + bbuff->wpos, src, len);
+    bbuff->wpos += len;
 }
 
-void CByteBuffer_read(CByteBuffer *pCByteBuffer, void *pDestination, size_t len)
+void bbuff_read(bbuff *bbuff, void *dst, size_t len)
 {
-    if((pCByteBuffer->m_rpos + len) <= pCByteBuffer->m_size)
+    if((bbuff->rpos + len) <= bbuff->size)
     {
-        memcpy(pDestination, pCByteBuffer->m_storage + pCByteBuffer->m_rpos, len);
+        memcpy(dst, bbuff->storage + bbuff->rpos, len);
     }
     else
     {
-        memset(pDestination, 0, len);
+        memset(dst, 0, len);
     }
-    pCByteBuffer->m_rpos += len;
+    bbuff->rpos += len;
 }
 
-void CByteBuffer_put(CByteBuffer *pCByteBuffer, size_t pos, const void *pSource, size_t srcSize)
+void bbuff_put(bbuff *bbuff, size_t pos, const void *src, size_t len)
 {
-    assert(pos + srcSize <= pCByteBuffer->m_size);
-    memcpy(pCByteBuffer->m_storage + pos, pSource, srcSize);
+    assert(pos + len <= bbuff->size);
+    memcpy(bbuff->storage + pos, src, len);
 }
 
 
