@@ -1,6 +1,5 @@
 //
 //  CVector.c
-//  TransDB
 //
 //  Created by Miroslav Kudrnac on 10.09.14.
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.

@@ -25,7 +25,7 @@ typedef struct CByteBuffer
 
 /** Create bytebuffer, storage is not allocated
  */
-bbuff *bbuff_create();
+bbuff *bbuff_create(void);
 
 /** Destroy bytebuffer and free storage
  */

@@ -1,6 +1,5 @@
 //
 //  CByteBuffer.c
-//  TransDB
 //
 //  Created by Miroslav Kudrnac on 10.09.14.
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
@@ -12,7 +11,7 @@
 #include <string.h>
 #include "CByteBuffer.h"
 
-bbuff *bbuff_create()
+bbuff *bbuff_create(void)
 {
     bbuff *p = calloc(1, sizeof(bbuff));
     return p;
