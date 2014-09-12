@@ -24,7 +24,7 @@
 int CommonFunctions::decompressGzip(const uint8 *pData,
                                     size_t dataLen,
                                     ByteBuffer &rBuffOut,
-                                    int zlibBufferSize /*= 128*1024*/)
+                                    int zlibBufferSize)
 {
     //buffer for zlib
     Bytef *pOutBuff = new Bytef[zlibBufferSize];
@@ -82,7 +82,7 @@ int CommonFunctions::compressGzip(int compressionLevel,
                                   const uint8 *pData,
                                   size_t dataLen,
                                   ByteBuffer &rBuffOut,
-                                  int zlibBufferSize /*= 128*1024*/)
+                                  int zlibBufferSize)
 {
     //buffer for zlib
     Bytef *pOutBuff = new Bytef[zlibBufferSize];
