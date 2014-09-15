@@ -153,7 +153,7 @@ void crc32_init(void)
 
 uint32 crc32_compute(const BYTE* buf, SIZE_T len)
 {
-    uint32 crc32 = (*m_crc32_func)(buf, len);
+    uint32 crc32 = m_crc32_func(buf, len);
     return crc32;
 }
 
