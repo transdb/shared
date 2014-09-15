@@ -10,25 +10,25 @@
 #include "crc32.h"
 
 #ifdef WIN32
-#include <nmmintrin.h>
+    #include <nmmintrin.h>
 #else
-inline uint32_t _mm_crc32_u32(uint32_t crc, uint32_t value)
-{
-    __asm__("crc32l %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
-    return crc;
-}
+    uint32_t _mm_crc32_u32(uint32_t crc, uint32_t value)
+    {
+        __asm__("crc32l %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+        return crc;
+    }
 
-inline uint32_t _mm_crc32_u16(uint32_t crc, uint16_t value)
-{
-    __asm__("crc32w %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
-    return crc;
-}
+    uint32_t _mm_crc32_u16(uint32_t crc, uint16_t value)
+    {
+        __asm__("crc32w %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+        return crc;
+    }
 
-inline uint32_t _mm_crc32_u8(uint32_t crc, uint8_t value)
-{
-    __asm__("crc32b %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
-    return crc;
-}
+    uint32_t _mm_crc32_u8(uint32_t crc, uint8_t value)
+    {
+        __asm__("crc32b %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+        return crc;
+    }
 #endif
 
 // reversed 0x1EDC6F41
