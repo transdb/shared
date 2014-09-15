@@ -12,27 +12,28 @@
 #ifdef WIN32
 #include <nmmintrin.h>
 #else
-static inline uint32_t _mm_crc32_u32(uint32_t crc, uint32_t value)
+inline uint32_t _mm_crc32_u32(uint32_t crc, uint32_t value)
 {
-    asm("crc32l %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+    __asm__("crc32l %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
     return crc;
 }
 
-static inline uint32_t _mm_crc32_u16(uint32_t crc, uint16_t value)
+inline uint32_t _mm_crc32_u16(uint32_t crc, uint16_t value)
 {
-    asm("crc32w %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+    __asm__("crc32w %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
     return crc;
 }
 
-static inline uint32_t _mm_crc32_u8(uint32_t crc, uint8_t value)
+inline uint32_t _mm_crc32_u8(uint32_t crc, uint8_t value)
 {
-    asm("crc32b %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
+    __asm__("crc32b %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
     return crc;
 }
 #endif
 
-static const uint32 CRCPOLY = 0x82f63b78; // reversed 0x1EDC6F41
-static const uint32 CRCINIT = 0xFFFFFFFF;
+// reversed 0x1EDC6F41
+#define CRCPOLY	0x82f63b78
+#define CRCINIT	0xFFFFFFFF
 
 // Slicing-by-4 and slicing-by-8 algorithms by Michael E. Kounavis and Frank L. Berry from Intel Corp.
 // http://www.intel.com/technology/comms/perfnet/download/CRC_generators.pdf
