@@ -50,7 +50,9 @@ public:
 	explicit FileLog(const std::string &sFilePath);
 	~FileLog();
     
-	void write(const char* format, ...);
+	void write(const char *source, const char *level, const char *format, ...);
+    void write(const char *source, const char *level, const char *format, va_list ap);
+    
     void getLogFileContent(ByteBuffer &rContent);
     
  	INLINE bool IsOpen() const
@@ -71,10 +73,19 @@ public:
     ~ScreenLog();
 
 	void Notice(const char * source, const char * format, ...);
+	void Notice(const char * source, const char * format, va_list ap);
+    
 	void Warning(const char * source, const char * format, ...);
+    void Warning(const char * source, const char * format, va_list ap);
+    
 	void Success(const char * source, const char * format, ...);
+    void Success(const char * source, const char * format, va_list ap);
+    
 	void Error(const char * source, const char * format, ...);
+    void Error(const char * source, const char * format, va_list ap);
+    
 	void Debug(const char * source, const char * format, ...);
+    void Debug(const char * source, const char * format, va_list ap);
     
     void CreateFileLog(const std::string &sFilePath);
     

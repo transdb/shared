@@ -27,6 +27,10 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
 
 /**
  */
+int CCommon_compressGzip_Buffer(int compressionLevel, const uint8 *pData, size_t dataLen, uint8 *dstBuffer, size_t dstBufferSize, size_t *outputSize);
+    
+/**
+ */
 bool CCommon_isGziped(const uint8 *pData);
 
 /**
