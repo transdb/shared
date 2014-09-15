@@ -142,12 +142,12 @@ void crc32_init(void)
     if(CPUInfo[2] & SSE42_FEATURE_BIT)
     {
         Log_Notice(__FUNCTION__, "SSE42 supported. Using Crc32 with HW support.");
-        m_crc32_func = &crc32_hardware_unrolled;
+        m_crc32_func = crc32_hardware_unrolled;
     }
     else
     {
         Log_Notice(__FUNCTION__, "SSE42 not supported. Using Crc32 without HW support.");
-        m_crc32_func = &crc32_slicing_by_8;
+        m_crc32_func = crc32_slicing_by_8;
     }
 }
 
