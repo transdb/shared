@@ -114,6 +114,58 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
+int CCommon_compressGzip_Buffer(int compressionLevel,
+                                const uint8 *pData,
+                                size_t dataLen,
+                                uint8 *dstBuffer,
+                                size_t dstBufferSize,
+                                size_t *outputSize)
+{
+    //set up stream
+    z_stream stream;
+    memset(&stream, 0, sizeof(z_stream));
+    
+    //init for gzip
+    int ret = deflateInit2(&stream, compressionLevel, Z_DEFLATED, GZIP_ENCODING+MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+    if(ret != Z_OK)
+        return ret;
+    
+    //setup input informations
+    stream.next_in = (Bytef*)pData;
+    stream.avail_in = (uInt)dataLen;
+    
+    //clear output size
+    *outputSize = 0;
+    
+    //process in one call
+    do
+    {
+        //setup output informations
+        stream.avail_out = (uInt)(dstBufferSize - *outputSize);
+        stream.next_out = dstBuffer;
+        
+        ret = deflate(&stream, Z_FINISH);
+        switch (ret)
+        {
+            case Z_NEED_DICT:
+                ret = Z_DATA_ERROR;     /* and fall through */
+            case Z_DATA_ERROR:
+            case Z_MEM_ERROR:
+            {
+                deflateEnd(&stream);
+                return ret;
+            }
+        }
+        //compressed data size
+        *outputSize += dstBufferSize - stream.avail_out;
+        
+    }while(stream.avail_out == 0);
+    
+    /* clean up and return */
+    deflateEnd(&stream);
+    return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+}
+
 bool CCommon_isGziped(const uint8 *pData)
 {
     return (pData[0] == 0x1f) && (pData[1] == 0x8b);

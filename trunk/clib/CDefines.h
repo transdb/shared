@@ -47,6 +47,24 @@ extern "C" {
     typedef int         HANDLE;
 #endif
 
+#ifdef WIN32
+    #define localtime(a,b) localtime_s(b,a)
+    #define snprintf _snprintf
+    #define strnicmp _strnicmp
+    #define stricmp _stricmp
+    #define I64FMT "%016I64X"
+    #define I64FMTD "%I64u"
+    #define SI64FMTD "%I64d"
+    #define atoll _atoi64
+#else
+    #define localtime localtime_r
+    #define stricmp strcasecmp
+    #define strnicmp strncasecmp
+    #define I64FMT "%016llX"
+    #define I64FMTD "%llu"
+    #define SI64FMTD "%lld"
+#endif
+    
 #ifdef __cplusplus
 }
 #endif

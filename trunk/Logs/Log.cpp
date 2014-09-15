@@ -18,6 +18,7 @@
  */
 
 #include "Log.h"
+#include "../clib/Log/CLog.h"
 
 #ifdef ANDROID
     #include <android/log.h>
@@ -86,6 +87,14 @@ void ScreenLog::Line()
 
 void ScreenLog::Notice(const char * source, const char * format, ...)
 {
+    va_list ap;
+    va_start(ap, format);
+    Notice(source, format, ap);
+    va_end(ap);
+}
+
+void ScreenLog::Notice(const char * source, const char * format, va_list ap)
+{
     if(m_log_level < 0)
         return;
     
@@ -95,69 +104,61 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
     //check is logging is to file
     if(m_pFileLog && m_pFileLog->IsOpen())
     {
-        //create message
-        size_t len;
-        char out[2048];
-        
-        va_list ap;
-        va_start(ap, format);
-        len = sprintf(out, "N %s: ", source);
-        vsnprintf(&out[len], sizeof(out) - len, format, ap);
-        va_end(ap);
-        
         //write to disk
-        m_pFileLog->write(out);
+        m_pFileLog->write(source, "N", format, ap);
     }
     else
     {
-		/* notice is old loglevel 0/string */
-		va_list ap;
-		va_start(ap, format);
-
 #if defined(ANDROID)
-		__android_log_vprint(ANDROID_LOG_INFO, source, format, ap);
+        __android_log_vprint(ANDROID_LOG_INFO, source, format, ap);
 #elif defined(WP8)
-		char scBuff[16384] = { 0 };
-		wchar_t szBuf[16384] = { 0 };
-
-		Time();
-		OutputDebugString(L"N ");
-		if (*source)
-		{
-			//convert to wchar
-			wchar_t sWBuff[512] = { 0 };
-			MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
-			OutputDebugString(sWBuff);
-			OutputDebugString(L": ");
-		}
-
-		vsnprintf(scBuff, sizeof(scBuff), format, ap);
-		//convert to wchar
-		MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
-		OutputDebugString(szBuf);
-		OutputDebugString(L"\n");
+        char scBuff[16384] = { 0 };
+        wchar_t szBuf[16384] = { 0 };
+        
+        Time();
+        OutputDebugString(L"N ");
+        if (*source)
+        {
+            //convert to wchar
+            wchar_t sWBuff[512] = { 0 };
+            MultiByteToWideChar(CP_UTF8, 0, source, -1, sWBuff, sizeof(sWBuff));
+            OutputDebugString(sWBuff);
+            OutputDebugString(L": ");
+        }
+        
+        vsnprintf(scBuff, sizeof(scBuff), format, ap);
+        //convert to wchar
+        MultiByteToWideChar(CP_UTF8, 0, scBuff, -1, szBuf, sizeof(szBuf));
+        OutputDebugString(szBuf);
+        OutputDebugString(L"\n");
 #else
-		Time();
-		fputs("N ", stdout);
-		if (*source)
-		{
-			Color(TWHITE);
-			fputs(source, stdout);
-			putchar(':');
-			putchar(' ');
-			Color(TNORMAL);
-		}
-
-		vprintf(format, ap);
-		putchar('\n');
-		Color(TNORMAL);
+        Time();
+        fputs("N ", stdout);
+        if (*source)
+        {
+            Color(TWHITE);
+            fputs(source, stdout);
+            putchar(':');
+            putchar(' ');
+            Color(TNORMAL);
+        }
+        
+        vprintf(format, ap);
+        putchar('\n');
+        Color(TNORMAL);
 #endif
-
-		va_end(ap);
     }
 }
 
 void ScreenLog::Warning(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Warning(source, format, ap);
+    va_end(ap);
+}
+
+void ScreenLog::Warning(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 2)
         return;
@@ -168,25 +169,11 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
     //check is logging is to file
     if(m_pFileLog && m_pFileLog->IsOpen())
     {
-        //create message
-        size_t len;
-        char out[2048];
-        
-        va_list ap;
-        va_start(ap, format);
-        len = sprintf(out, "W %s: ", source);
-        vsnprintf(&out[len], sizeof(out) - len, format, ap);
-        va_end(ap);
-        
         //write to disk
-        m_pFileLog->write(out);
+        m_pFileLog->write(source, "W", format, ap);
     }
     else
     {
-		/* warning is old loglevel 2/detail */
-		va_list ap;
-		va_start(ap, format);
-
 #if defined(ANDROID)
 		__android_log_vprint(ANDROID_LOG_WARN, source, format, ap);
 #elif defined(WP8)
@@ -210,7 +197,6 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
 		OutputDebugString(szBuf);
 		OutputDebugString(L"\n");
 #else
-
 		Time();
 		Color(TYELLOW);
 		fputs("W ", stdout);
@@ -227,12 +213,18 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
 		putchar('\n');
 		Color(TNORMAL);
 #endif
-
-		va_end(ap);
     }
 }
 
 void ScreenLog::Success(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Success(source, format, ap);
+    va_end(ap);
+}
+
+void ScreenLog::Success(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 2)
         return;
@@ -243,24 +235,11 @@ void ScreenLog::Success(const char * source, const char * format, ...)
     //check is logging is to file
     if(m_pFileLog && m_pFileLog->IsOpen())
     {
-        //create message
-        size_t len;
-        char out[2048];
-        
-        va_list ap;
-        va_start(ap, format);
-        len = sprintf(out, "S %s: ", source);
-        vsnprintf(&out[len], sizeof(out) - len, format, ap);
-        va_end(ap);
-        
         //write to disk
-        m_pFileLog->write(out);
+        m_pFileLog->write(source, "S", format, ap);
     }
     else
     {
-		va_list ap;
-		va_start(ap, format);
-
 #if defined(ANDROID)
 		__android_log_vprint(ANDROID_LOG_INFO, source, format, ap);
 #elif defined(WP8)
@@ -300,12 +279,18 @@ void ScreenLog::Success(const char * source, const char * format, ...)
 		putchar('\n');
 		Color(TNORMAL);
 #endif
-
-		va_end(ap);
     }
 }
 
 void ScreenLog::Error(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Error(source, format, ap);
+    va_end(ap);
+}
+
+void ScreenLog::Error(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 1)
         return;
@@ -316,24 +301,11 @@ void ScreenLog::Error(const char * source, const char * format, ...)
     //check is logging is to file
     if(m_pFileLog && m_pFileLog->IsOpen())
     {
-        //create message
-        size_t len;
-        char out[2048];
-        
-        va_list ap;
-        va_start(ap, format);
-        len = sprintf(out, "E %s: ", source);
-        vsnprintf(&out[len], sizeof(out) - len, format, ap);
-        va_end(ap);
-        
         //write to disk
-        m_pFileLog->write(out);
+        m_pFileLog->write(source, "E", format, ap);
     }
     else
     {
-		va_list ap;
-		va_start(ap, format);
-
 #if defined(ANDROID)
 		__android_log_vprint(ANDROID_LOG_ERROR, source, format, ap);
 #elif defined(WP8)
@@ -373,12 +345,18 @@ void ScreenLog::Error(const char * source, const char * format, ...)
 		putchar('\n');
 		Color(TNORMAL);
 #endif
-
-		va_end(ap);
     }
 }
 
 void ScreenLog::Debug(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Debug(source, format, ap);
+    va_end(ap);
+}
+
+void ScreenLog::Debug(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 3)
         return;
@@ -389,24 +367,11 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
     //check is logging is to file
     if(m_pFileLog && m_pFileLog->IsOpen())
     {
-        //create message
-        size_t len;
-        char out[2048];
-        
-        va_list ap;
-        va_start(ap, format);
-        len = sprintf(out, "D %s: ", source);
-        vsnprintf(&out[len], sizeof(out) - len, format, ap);
-        va_end(ap);
-        
         //write to disk
-        m_pFileLog->write(out);
+        m_pFileLog->write(source, "D", format, ap);
     }
     else
     {
-		va_list ap;
-		va_start(ap, format);
-
 #if defined(ANDROID)
 		__android_log_vprint(ANDROID_LOG_DEBUG, source, format, ap);
 #elif defined(WP8)
@@ -446,8 +411,6 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
 		putchar('\n');
 		Color(TNORMAL);
 #endif
-
-		va_end(ap);
     }
 }
 
@@ -467,26 +430,36 @@ FileLog::~FileLog()
     m_hFile = INVALID_HANDLE_VALUE;
 }
 
-void FileLog::write(const char* format, ...)
+void FileLog::write(const char *source, const char *level, const char *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+    write(source, level, format, ap);
+	va_end(ap);
+}
+
+void FileLog::write(const char *source, const char *level, const char *format, va_list ap)
 {
     time_t t;
     size_t l;
     tm aTm;
-	va_list ap;
-	va_start(ap, format);
-	char out[4096];
-
-	t = time(NULL);
-	localtime(&t, &aTm);
-	l = snprintf(out, sizeof(out), "[%-4d-%02d-%02d %02d:%02d:%02d] ", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec);
-	l += vsnprintf(&out[l], sizeof(out) - l, format, ap);
+    char out[4096];
+    
+    //[2014-06-21 11:48:17] N main: Starting server in: RELEASE mode. SVN version: 102M.
+    //[2014-06-21 11:48:17] [level] [source]: [message]
+    t = time(NULL);
+    localtime(&t, &aTm);
+    
+    //add date time, level and source
+    l = snprintf(out, sizeof(out), "[%-4d-%02d-%02d %02d:%02d:%02d] %s %s: ", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec, level, source);
+    //add message
+    l += vsnprintf(&out[l], sizeof(out) - l, format, ap);
+    //add new line
     l += snprintf(&out[l], sizeof(out) - l, "\n");
     
     //write to end
     IO::fseek(m_hFile, 0, IO::IO_SEEK_END);
     IO::fwrite(&out, l, m_hFile);
-
-	va_end(ap);
 }
 
 void FileLog::getLogFileContent(ByteBuffer &rContent)
@@ -501,7 +474,46 @@ void FileLog::getLogFileContent(ByteBuffer &rContent)
     IO::fread((void*)rContent.contents(), rContent.size(), m_hFile);
 }
 
+//C interface
+void Log_Notice(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Log.Notice(source, format, ap);
+    va_end(ap);
+}
 
+void Log_Warning(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Log.Warning(source, format, ap);
+    va_end(ap);
+}
+
+void Log_Success(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Log.Success(source, format, ap);
+    va_end(ap);
+}
+
+void Log_Error(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Log.Error(source, format, ap);
+    va_end(ap);
+}
+
+void Log_Debug(const char * source, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    Log.Debug(source, format, ap);
+    va_end(ap);
+}
 
 
 
