@@ -150,13 +150,13 @@ size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFil
         throw std::runtime_error(rError);
     }
 
-	//check how many bytes are written by write
-	if(lpNumberOfBytesWritten != (DWORD)nNumberOfBytesToWrite)
-	{
-		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: WriteFile failed bytes to write: " SI64FMTD ", bytes writen by write: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToWrite, (int64)lpNumberOfBytesWritten);
-		throw std::runtime_error(rError);
-	}
+    //check how many bytes are written by write
+    if(lpNumberOfBytesWritten != (DWORD)nNumberOfBytesToWrite)
+    {
+	char rError[512];
+	snprintf(rError, sizeof(rError), "%s: WriteFile failed bytes to write: %u, bytes writen by write: %u", __FUNCTION__, (uint32)nNumberOfBytesToWrite, (uint32)lpNumberOfBytesWritten);
+	throw std::runtime_error(rError);
+    }
 #else
     ssize_t lpNumberOfBytesWritten;
     lpNumberOfBytesWritten = ::write(hFile, pBuffer, nNumberOfBytesToWrite);
@@ -167,13 +167,13 @@ size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFil
         throw std::runtime_error(rError);
     }
 
-	//check how many bytes are written by write
-	if (lpNumberOfBytesWritten != (ssize_t)nNumberOfBytesToWrite)
-	{
-		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: " SI64FMTD ", bytes writen by write: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToWrite, (int64)lpNumberOfBytesWritten);
-		throw std::runtime_error(rError);
-	}
+    //check how many bytes are written by write
+    if (lpNumberOfBytesWritten != (ssize_t)nNumberOfBytesToWrite)
+    {
+	char rError[512];
+	snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %lu, bytes writen by write: %lu", __FUNCTION__, (unsigned long)nNumberOfBytesToWrite, (unsigned long)lpNumberOfBytesWritten);
+	throw std::runtime_error(rError);
+    }
 #endif
     return lpNumberOfBytesWritten;
 }
@@ -194,7 +194,7 @@ size_t IO::fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile)
 	if (lpNumberOfBytesRead != (DWORD)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: " SI64FMTD ", bytes read by ReadFile: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToRead, (int64)lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: %u, bytes read by ReadFile: %u", __FUNCTION__, (uint32)nNumberOfBytesToRead, (uint32)lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #else
@@ -211,7 +211,7 @@ size_t IO::fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile)
 	if (lpNumberOfBytesRead != (ssize_t)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: " SI64FMTD ", bytes read by read: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToRead, (int64)lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: %lu, bytes read by read: %lu", __FUNCTION__, (unsigned long)nNumberOfBytesToRead, (unsigned long)lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #endif
