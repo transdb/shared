@@ -14,6 +14,7 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 //data types
 #ifdef WIN32
@@ -63,6 +64,19 @@ extern "C" {
     #define I64FMT "%016llX"
     #define I64FMTD "%llu"
     #define SI64FMTD "%lld"
+#endif
+    
+#ifndef WIN32
+    //imports
+    #define MAX_PATH 				PATH_MAX
+    #define INVALID_HANDLE_VALUE    -1
+    
+    static inline uint64 GetTickCount64()
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    }	
 #endif
     
 #ifdef __cplusplus

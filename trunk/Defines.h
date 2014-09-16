@@ -113,19 +113,6 @@
 //data types
 #include "clib/CDefines.h"
 
-#ifndef WIN32
-	//imports
-	#define MAX_PATH 				1024
-    #define INVALID_HANDLE_VALUE    -1
-
-	static inline uint64 GetTickCount64()
-	{
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);		
-	}	
-#endif
-
 //time
 extern time_t   UNIXTIME;	
 extern tm       g_localTime;
