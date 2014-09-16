@@ -8,7 +8,7 @@
 
 #include "IO.h"
 
-HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess, const FLAGS &eFlags)
+HANDLE IO::fopen(const char *pPath, ACCESS eAccess, FLAGS eFlags)
 {
     HANDLE hHandle = INVALID_HANDLE_VALUE;
 #ifdef WIN32
@@ -84,7 +84,7 @@ HANDLE IO::fopen(const char *pPath, const ACCESS &eAccess, const FLAGS &eFlags)
     return hHandle;
 }
 
-int64 IO::ftell(const HANDLE &hFile)
+int64 IO::ftell(HANDLE hFile)
 {
 #ifdef WIN32
     LARGE_INTEGER liDistanceToMove = { 0 };
@@ -110,7 +110,7 @@ int64 IO::ftell(const HANDLE &hFile)
 #endif
 }
 
-int64 IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos)
+int64 IO::fseek(HANDLE hFile, int64 offset, SEEK_POS eSeekPos)
 {
     int origin = static_cast<int>(eSeekPos);
 #ifdef WIN32
@@ -138,7 +138,7 @@ int64 IO::fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekP
 #endif
 }
 
-size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile)
+size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFile)
 {
 #ifdef WIN32
     DWORD lpNumberOfBytesWritten;
@@ -154,7 +154,7 @@ size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, cons
 	if(lpNumberOfBytesWritten != (DWORD)nNumberOfBytesToWrite)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: WriteFile failed bytes to write: %zu, bytes writen by write: %u", __FUNCTION__, nNumberOfBytesToWrite, lpNumberOfBytesWritten);
+		snprintf(rError, sizeof(rError), "%s: WriteFile failed bytes to write: " SI64FMTD ", bytes writen by write: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToWrite, (int64)lpNumberOfBytesWritten);
 		throw std::runtime_error(rError);
 	}
 #else
@@ -171,14 +171,14 @@ size_t IO::fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, cons
 	if (lpNumberOfBytesWritten != (ssize_t)nNumberOfBytesToWrite)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: %zu, bytes writen by write: %zd", __FUNCTION__, nNumberOfBytesToWrite, lpNumberOfBytesWritten);
+		snprintf(rError, sizeof(rError), "%s: write failed bytes to write: " SI64FMTD ", bytes writen by write: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToWrite, (int64)lpNumberOfBytesWritten);
 		throw std::runtime_error(rError);
 	}
 #endif
     return lpNumberOfBytesWritten;
 }
 
-size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile)
+size_t IO::fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile)
 {
 #ifdef WIN32
     DWORD lpNumberOfBytesRead;
@@ -194,7 +194,7 @@ size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE
 	if (lpNumberOfBytesRead != (DWORD)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: %zu, bytes read by ReadFile: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: " SI64FMTD ", bytes read by ReadFile: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToRead, (int64)lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #else
@@ -211,14 +211,14 @@ size_t IO::fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE
 	if (lpNumberOfBytesRead != (ssize_t)nNumberOfBytesToRead)
 	{
 		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: %zu, bytes read by read: %zd", __FUNCTION__, nNumberOfBytesToRead, lpNumberOfBytesRead);
+		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: " SI64FMTD ", bytes read by read: " SI64FMTD, __FUNCTION__, (int64)nNumberOfBytesToRead, (int64)lpNumberOfBytesRead);
 		throw std::runtime_error(rError);
 	}
 #endif
     return lpNumberOfBytesRead;
 }
 
-void IO::fresize(const HANDLE &hFile, const int64 &newSize)
+void IO::fresize(HANDLE hFile, int64 newSize)
 {
 #ifdef WIN32
     BOOL ret;
@@ -252,7 +252,7 @@ void IO::fresize(const HANDLE &hFile, const int64 &newSize)
 #endif
 }
 
-void IO::fclose(const HANDLE &hFile)
+void IO::fclose(HANDLE hFile)
 {
 #ifdef WIN32
     BOOL ret = CloseHandle(hFile);
@@ -273,7 +273,7 @@ void IO::fclose(const HANDLE &hFile)
 #endif
 }
 
-void IO::fsync(const HANDLE &hFile)
+void IO::fsync(HANDLE hFile)
 {
 #ifdef WIN32
     BOOL ret = ::FlushFileBuffers(hFile);

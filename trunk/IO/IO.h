@@ -42,35 +42,35 @@ public:
     
     /** Open file
 	 */
-    static HANDLE fopen(const char *pPath, const ACCESS &eAccess, const FLAGS &eFlags);
+    static HANDLE fopen(const char *pPath, ACCESS eAccess, FLAGS eFlags);
     
    	/** Get pos in file
 	 */
-	static int64 ftell(const HANDLE &hFile);
+	static int64 ftell(HANDLE hFile);
     
    	/** Seek in file
 	 */
-	static int64 fseek(const HANDLE &hFile, const int64 &offset, const SEEK_POS &eSeekPos);
+	static int64 fseek(HANDLE hFile, int64 offset, SEEK_POS eSeekPos);
     
    	/** Write data to file
 	 */
-	static size_t fwrite(const void *pBuffer, const size_t &nNumberOfBytesToWrite, const HANDLE &hFile);
+	static size_t fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFile);
     
    	/** Read data from file
 	 */
-	static size_t fread(void *pBuffer, const size_t &nNumberOfBytesToRead, const HANDLE &hFile);
+	static size_t fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile);
     
    	/** Resize file
 	 */
-	static void fresize(const HANDLE &hFile, const int64 &newSize);
+	static void fresize(HANDLE hFile, int64 newSize);
     
    	/** Close file handle
 	 */
-	static void fclose(const HANDLE &hFile);
+	static void fclose(HANDLE hFile);
     
    	/** Sync data to device
 	 */
-	static void fsync(const HANDLE &hFile);
+	static void fsync(HANDLE hFile);
     
     /** Get error number
      */
