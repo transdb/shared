@@ -18,12 +18,6 @@
         return crc;
     }
 
-    static inline uint32_t _mm_crc32_u16(uint32_t crc, uint16_t value)
-    {
-        __asm__("crc32w %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
-        return crc;
-    }
-
     static inline uint32_t _mm_crc32_u8(uint32_t crc, uint8_t value)
     {
         __asm__("crc32b %[value], %[crc]\n" : [crc] "+r" (crc) : [value] "rm" (value));
