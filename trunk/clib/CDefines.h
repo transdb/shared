@@ -16,6 +16,29 @@ extern "C" {
 #include <stdint.h>
 #include <sys/time.h>
 
+//platform definitions
+#ifdef __APPLE_CC__
+    #define MAC
+#endif
+    
+//Windows
+#ifdef _M_X64
+    #define X64
+#endif
+#ifdef _WIN32
+    #define WIN32
+#endif
+#if !defined(DEBUG) && defined(WIN32)
+//  #define _SECURE_SCL 0
+//	#define _HAS_EXCEPTIONS 0
+//	#define _CRT_DISABLE_PERFCRIT_LOCKS
+#endif
+#if defined(WIN32) && !defined(WP8)
+    #define _CRT_SECURE_NO_WARNINGS
+//	#define _SCL_SECURE_NO_WARNINGS
+//	#define _HAS_ITERATOR_DEBUGGING 0
+#endif
+    
 //data types
 #ifdef WIN32
     typedef signed __int64 int64;
