@@ -100,6 +100,18 @@
     }
 #endif
 
+#ifdef WIN32
+    #define localtime(a,b) localtime_s(b,a)
+    #define snprintf _snprintf
+    #define strnicmp _strnicmp
+    #define stricmp _stricmp
+    #define atoll _atoi64
+#else
+    #define localtime localtime_r
+    #define stricmp strcasecmp
+    #define strnicmp strncasecmp
+#endif
+
 //time
 extern time_t   UNIXTIME;
 extern tm       g_localTime;
