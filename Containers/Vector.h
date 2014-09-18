@@ -16,7 +16,6 @@ public:
     typedef T*              iterator;
     typedef T               value_type;
     typedef SizeT           size_type;
-    static const size_type	npos = static_cast<size_type>(-1);
 	static const size_type	granularity = 16;
     
 	//constructor
