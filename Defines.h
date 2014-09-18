@@ -91,8 +91,17 @@
 	#include <pthread.h>
 #endif
 
+#ifndef WIN32
+    static inline uint64 GetTickCount64()
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    }
+#endif
+
 //time
-extern time_t   UNIXTIME;	
+extern time_t   UNIXTIME;
 extern tm       g_localTime;
 
 //inline
