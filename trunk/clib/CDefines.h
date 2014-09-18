@@ -93,13 +93,6 @@ extern "C" {
     //imports
     #define MAX_PATH 				PATH_MAX
     #define INVALID_HANDLE_VALUE    -1
-    
-    static inline uint64 GetTickCount64()
-    {
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-    }	
 #endif
     
 #ifdef __cplusplus
