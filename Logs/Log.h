@@ -20,7 +20,7 @@
 #define LOG_H
 
 #include "../Threading/Threading.h"
-#include "../Packets/ByteBuffer.h"
+#include "../clib/Buffers/CByteBuffer.h"
 #include "../IO/IO.h"
 
 #ifdef WIN32
@@ -53,7 +53,7 @@ public:
 	void write(const char *source, const char *level, const char *format, ...);
     void write(const char *source, const char *level, const char *format, va_list ap);
     
-    void getLogFileContent(ByteBuffer &rContent);
+    void getLogFileContent(bbuff *pContent);
     
  	INLINE bool IsOpen() const
     {
@@ -94,12 +94,12 @@ public:
         m_log_level = logLevel;
     }
     
-    INLINE void GetFileLogContent(ByteBuffer &rContent)
+    INLINE void GetFileLogContent(bbuff *pContent)
     {
         std::lock_guard<std::mutex> rGuard(m_lock);
         if(m_pFileLog && m_pFileLog->IsOpen())
         {
-            m_pFileLog->getLogFileContent(rContent);
+            m_pFileLog->getLogFileContent(pContent);
         }
     }
     
