@@ -462,16 +462,23 @@ void FileLog::write(const char *source, const char *level, const char *format, v
     IO::fwrite(&out, l, m_hFile);
 }
 
-void FileLog::getLogFileContent(ByteBuffer &rContent)
+void FileLog::getLogFileContent(bbuff *pContent)
 {
-    int64 fileSize;
-    
+    //get file size
     IO::fseek(m_hFile, 0, IO::IO_SEEK_END);
-    fileSize = IO::ftell(m_hFile);
+    int64 fileSize = IO::ftell(m_hFile);
     IO::fseek(m_hFile, 0, IO::IO_SEEK_SET);
     
-    rContent.resize((size_t)fileSize);
-    IO::fread((void*)rContent.contents(), rContent.size(), m_hFile);
+    //prealloc
+    bbuff_reserve(pContent, pContent->wpos + fileSize);
+    
+    //append data
+    uint8 buff[4096];
+    size_t bytesRead;
+    while((bytesRead = IO::fread(buff, sizeof(buff), m_hFile)) > 0)
+    {
+        bbuff_append(pContent, buff, bytesRead);
+    }
 }
 
 //C interface

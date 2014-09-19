@@ -141,7 +141,7 @@ int64 IO::fseek(HANDLE hFile, int64 offset, SEEK_POS eSeekPos)
 size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFile)
 {
 #ifdef WIN32
-    DWORD lpNumberOfBytesWritten;
+    DWORD lpNumberOfBytesWritten = 0;
     BOOL ret = WriteFile(hFile, pBuffer, (DWORD)nNumberOfBytesToWrite, &lpNumberOfBytesWritten, NULL);
     if(ret == FALSE)
     {
@@ -158,8 +158,7 @@ size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFil
 	throw std::runtime_error(rError);
     }
 #else
-    ssize_t lpNumberOfBytesWritten;
-    lpNumberOfBytesWritten = ::write(hFile, pBuffer, nNumberOfBytesToWrite);
+    ssize_t lpNumberOfBytesWritten = ::write(hFile, pBuffer, nNumberOfBytesToWrite);
     if(lpNumberOfBytesWritten == -1)
     {
         char rError[512];
@@ -181,7 +180,7 @@ size_t IO::fwrite(const void *pBuffer, size_t nNumberOfBytesToWrite, HANDLE hFil
 size_t IO::fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile)
 {
 #ifdef WIN32
-    DWORD lpNumberOfBytesRead;
+    DWORD lpNumberOfBytesRead = 0;
     BOOL ret = ReadFile(hFile, pBuffer, (DWORD)nNumberOfBytesToRead, &lpNumberOfBytesRead, NULL);
     if(ret == FALSE)
     {
@@ -189,31 +188,14 @@ size_t IO::fread(void *pBuffer, size_t nNumberOfBytesToRead, HANDLE hFile)
         snprintf(rError, sizeof(rError), "%s: ReadFile failed errno: %d", __FUNCTION__, GetLastError());
         throw std::runtime_error(rError);
     }
-
-	//check how many bytes are read by read
-	if (lpNumberOfBytesRead != (DWORD)nNumberOfBytesToRead)
-	{
-		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: ReadFile failed bytes to read: %u, bytes read by ReadFile: %u", __FUNCTION__, (uint32)nNumberOfBytesToRead, (uint32)lpNumberOfBytesRead);
-		throw std::runtime_error(rError);
-	}
 #else
-    ssize_t lpNumberOfBytesRead;
-    lpNumberOfBytesRead = ::read(hFile, pBuffer, nNumberOfBytesToRead);
+    ssize_t lpNumberOfBytesRead = ::read(hFile, pBuffer, nNumberOfBytesToRead);
     if(lpNumberOfBytesRead == -1)
     {
         char rError[512];
         snprintf(rError, sizeof(rError), "%s: read failed errno: %d", __FUNCTION__, errno);
         throw std::runtime_error(rError);
     }
-
-	//check how many bytes are read by read
-	if (lpNumberOfBytesRead != (ssize_t)nNumberOfBytesToRead)
-	{
-		char rError[512];
-		snprintf(rError, sizeof(rError), "%s: read failed bytes to read: %lu, bytes read by read: %lu", __FUNCTION__, (unsigned long)nNumberOfBytesToRead, (unsigned long)lpNumberOfBytesRead);
-		throw std::runtime_error(rError);
-	}
 #endif
     return lpNumberOfBytesRead;
 }
