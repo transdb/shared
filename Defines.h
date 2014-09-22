@@ -109,6 +109,13 @@
     #include <thread>
 #endif
 
+//inline
+#ifdef DEBUG
+    #define INLINE
+#else
+    #define INLINE inline
+#endif
+
 //data types
 #ifdef WIN32
     typedef signed __int64 int64;
@@ -141,10 +148,10 @@
     typedef int         HANDLE;
 
     //imports
-    #define MAX_PATH 				1024
+    #define MAX_PATH 				PATH_MAX
     #define INVALID_HANDLE_VALUE    -1
 
-    static inline uint64 GetTickCount64()
+    static INLINE uint64 GetTickCount64()
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -175,13 +182,6 @@
 //time
 extern time_t       UNIXTIME;
 extern struct tm    g_localTime;
-
-//inline
-#ifdef DEBUG
-    #define INLINE
-#else
-    #define INLINE inline
-#endif
 
 #ifdef WIN32
     #define NOINLINE __declspec(noinline)
