@@ -20,15 +20,16 @@ void bbuff_destroy(bbuff *self)
 }
 
 void bbuff_reserve(bbuff *self, size_t ressize)
-{
-    assert(ressize >= 0);
-    
+{ 
+	//for WP8 - C89
+	void *pNewBuffer;
+
     if(ressize > self->capacity)
     {
         //set capacity
         self->capacity = ressize;
         //resize buffer
-        void *pNewBuffer = realloc(self->storage, ressize);
+        pNewBuffer = realloc(self->storage, ressize);
         if(pNewBuffer == NULL)
             return;
         

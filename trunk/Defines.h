@@ -49,9 +49,12 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <string.h>
-#include <stdbool.h>
 #include <signal.h>
 #include <sys/stat.h>
+//WP8 using C89
+#ifndef WP8
+	#include <stdbool.h>
+#endif
 
 #ifdef WIN32
     #ifndef WIN32_LEAN_AND_MEAN
