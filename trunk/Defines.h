@@ -59,6 +59,7 @@
         #define NOMINMAX
     #endif
 
+	#include <malloc.h>
 	#include <time.h>
 	#include <signal.h>
     #include <windows.h>

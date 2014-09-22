@@ -466,7 +466,7 @@ void FileLog::getLogFileContent(bbuff *pContent)
 {
     //get file size
     IO::fseek(m_hFile, 0, IO::IO_SEEK_END);
-    int64 fileSize = IO::ftell(m_hFile);
+    size_t fileSize = (size_t)IO::ftell(m_hFile);
     IO::fseek(m_hFile, 0, IO::IO_SEEK_SET);
     
     //prealloc
