@@ -14,7 +14,7 @@ extern "C" {
 
 #include <time.h>
 #include <stdbool.h>
-#include "CDefines.h"
+#include "../Defines.h"
 #include "Buffers/CByteBuffer.h"
 
 /**

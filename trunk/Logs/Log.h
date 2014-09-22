@@ -22,6 +22,7 @@
 #include "../Threading/Threading.h"
 #include "../clib/Buffers/CByteBuffer.h"
 #include "../IO/IO.h"
+#include "../Singleton.h"
 
 #ifdef WIN32
 	#define TRED FOREGROUND_RED | FOREGROUND_INTENSITY

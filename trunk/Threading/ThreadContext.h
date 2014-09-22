@@ -20,6 +20,8 @@
 #ifndef THREADCONTEXT_H
 #define THREADCONTEXT_H
 
+#include "../CommonFunctions.h"
+
 class ThreadContext
 {
 public:
