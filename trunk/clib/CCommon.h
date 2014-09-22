@@ -12,8 +12,6 @@
 extern "C" {
 #endif
 
-#include <time.h>
-#include <stdbool.h>
 #include "../Defines.h"
 #include "Buffers/CByteBuffer.h"
 

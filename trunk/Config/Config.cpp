@@ -17,6 +17,7 @@
  *
  */
 
+#include <fstream>
 #include "Config.h"
 #include "../Logs/Log.h"
 

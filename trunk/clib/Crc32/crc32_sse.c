@@ -7,7 +7,7 @@
 
 #include "../cpuid.h"
 #include "../Log/CLog.h"
-#include "crc32.h"
+#include "crc32_sse.h"
 
 #ifdef WIN32
     #include <nmmintrin.h>

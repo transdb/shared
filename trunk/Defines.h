@@ -43,16 +43,12 @@
 //	#define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <stdarg.h>
-//#include <time.h>
-//#include <math.h>
-//#include <errno.h>
+//common headers - C/C++
+#include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
-//#include <signal.h>
-//#include <sys/types.h>
-//#include <sys/stat.h>
+#include <string.h>
+#include <stdbool.h>
 
 #ifdef WIN32
     #ifndef WIN32_LEAN_AND_MEAN
@@ -62,10 +58,13 @@
         #define NOMINMAX
     #endif
 
+	#include <time.h>
+	#include <signal.h>
     #include <windows.h>
     #include <winsock2.h>
     #include <ws2tcpip.h>
     #include <process.h>
+	#include <sys/stat.h>
 #else
     #include <unistd.h>
     #include <netdb.h>

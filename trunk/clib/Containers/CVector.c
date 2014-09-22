@@ -5,10 +5,6 @@
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
 //
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "CVector.h"
 
 CVector *CVector_create(size_t itemSize)

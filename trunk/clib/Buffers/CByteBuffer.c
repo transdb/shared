@@ -5,10 +5,6 @@
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
 //
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "CByteBuffer.h"
 
 bbuff *bbuff_create(void)
