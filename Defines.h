@@ -76,6 +76,7 @@
     #include <sys/times.h>
     #include <arpa/inet.h>
     #include <sys/ioctl.h>
+    #include <sys/resource.h>
 
     #ifndef MAC
         #include <linux/types.h>
