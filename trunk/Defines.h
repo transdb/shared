@@ -83,6 +83,7 @@
 
     #ifndef MAC
         #include <linux/types.h>
+        #include <linux/limits.h>
     #endif
 #endif
 
