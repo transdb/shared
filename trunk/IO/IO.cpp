@@ -276,7 +276,7 @@ void IO::fsync(HANDLE hFile)
 #endif
 }
 
-int IO::ferror()
+int IO::ferror() NOEXCEPT
 {
 #ifdef WIN32
     return GetLastError();

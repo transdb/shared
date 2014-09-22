@@ -50,7 +50,7 @@ protected:
 class StackPacket : public StackBuffer
 {
 public:
-	StackPacket(uint16 opcode, uint8* ptr, size_t sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
+    StackPacket(uint16 opcode, uint8* ptr, size_t sz) : StackBuffer(ptr, sz), m_opcode(opcode) { }
 
 	//! Clear packet and set opcode all in one mighty blow
 	void Initialize(uint16 opcode)

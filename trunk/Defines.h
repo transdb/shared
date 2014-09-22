@@ -86,19 +86,7 @@
 #include <condition_variable>
 #include <chrono>
 #include <thread>
-
-#ifndef WIN32
-	#include <pthread.h>
-#endif
-
-#ifndef WIN32
-    static inline uint64 GetTickCount64()
-    {
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-    }
-#endif
+#include <type_traits>
 
 #ifdef WIN32
     #define localtime(a,b) localtime_s(b,a)
@@ -106,10 +94,21 @@
     #define strnicmp _strnicmp
     #define stricmp _stricmp
     #define atoll _atoi64
+    #define NOEXCEPT _NOEXCEPT
 #else
     #define localtime localtime_r
     #define stricmp strcasecmp
     #define strnicmp strncasecmp
+    #define NOEXCEPT noexcept
+#endif
+
+#ifndef WIN32
+    static inline uint64 GetTickCount64() NOEXCEPT
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    }
 #endif
 
 //time

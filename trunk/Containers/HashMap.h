@@ -14,16 +14,16 @@ template <class K, class V>
 class HashNode
 {
 public:
-    explicit HashNode(const K &key, const V &value) : m_key(key), m_value(value), m_pNext(NULL)
+    explicit HashNode(const K &key, const V &value) NOEXCEPT : m_key(key), m_value(std::move(value)), m_pNext(NULL)
     {
         
     }
     
-    INLINE K getKey() const                 { return m_key; }
-    INLINE V getValue() const               { return m_value; }
-    INLINE void setValue(V value)           { m_value = value; }
-    INLINE HashNode *getNext() const        { return m_pNext; }
-    INLINE void setNext(HashNode *pNext)    { m_pNext = pNext; }
+    INLINE K getKey() const NOEXCEPT                { return m_key; }
+    INLINE V getValue() const NOEXCEPT              { return m_value; }
+    INLINE void setValue(const V &value)            { m_value = value; }
+    INLINE HashNode *getNext() const NOEXCEPT       { return m_pNext; }
+    INLINE void setNext(HashNode *pNext) NOEXCEPT   { m_pNext = pNext; }
     
 private:
     //key-value pair
@@ -72,12 +72,12 @@ public:
         m_pTable = NULL;
     }
     
-    INLINE uint64 size() const
+    INLINE uint64 size() const NOEXCEPT
     {
         return m_recordsCount;
     }
     
-    INLINE uint64 tableSizeMask() const
+    INLINE uint64 tableSizeMask() const NOEXCEPT
     {
         return m_tableSizeMask;
     }
@@ -131,7 +131,7 @@ public:
         }
     }
     
-    INLINE bool containsKey(const K &key)
+    INLINE bool containsKey(const K &key) NOEXCEPT
     {
         uint64 hashValue = static_cast<uint64>(key) & m_tableSizeMask;
         HashNodeT *pEntry = m_pTable[hashValue];
@@ -146,7 +146,7 @@ public:
         return false;
     }
     
-    INLINE bool get(const K &key, V &value)
+    INLINE bool get(const K &key, V &value) NOEXCEPT
     {
         uint64 hashValue = static_cast<uint64>(key) & m_tableSizeMask;
         HashNodeT *pEntry = m_pTable[hashValue];
