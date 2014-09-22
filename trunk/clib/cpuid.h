@@ -6,7 +6,7 @@
 //
 
 #ifndef CPUID_H
-#define CPUID_H
+#define CPUID_H 1
 
 #ifdef __cplusplus
 extern "C" {

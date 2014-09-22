@@ -1,13 +1,12 @@
 //
 //  CLog.h
-//  TransDB
 //
 //  Created by Miroslav Kudrnac on 15.09.14.
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
 //
 
-#ifndef TransDB_CLog_h
-#define TransDB_CLog_h
+#ifndef CLOG_H
+#define CLOG_H 1
 
 #ifdef __cplusplus
 extern "C" {
