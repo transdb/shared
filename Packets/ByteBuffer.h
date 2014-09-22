@@ -69,10 +69,9 @@ public:
     {
         if(this != &buf)
         {
-            clear();
-            std::swap(m_rpos, buf.m_rpos);
-            std::swap(m_wpos, buf.m_wpos);
-            std::swap(m_storage, buf.m_storage);
+            m_storage = std::move(buf.m_storage);
+            m_rpos = std::move(buf.m_rpos);
+            m_wpos = std::move(buf.m_wpos);
         }
         return *this;
     }

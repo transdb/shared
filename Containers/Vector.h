@@ -19,9 +19,9 @@ public:
 	static const size_type	granularity = 16;
     
 	//constructor
-    Vector() : m_pBuff(NULL), 
-			   m_size(0), 
-			   m_capacity(0)
+    Vector() NOEXCEPT : m_pBuff(NULL),
+                        m_size(0),
+                        m_capacity(0)
     {
 
     }
@@ -35,7 +35,7 @@ public:
     }
     
 	//copy constructor
-    Vector(const Vector<T, SizeT> &v) : m_pBuff(NULL), 
+    Vector(const Vector<T, SizeT> &v) : m_pBuff(NULL),
 										m_size(0), 
 										m_capacity(0)
     { 
@@ -43,9 +43,9 @@ public:
     }
 
 	//moveable constructor
-	Vector(Vector<T, SizeT> &&v) : m_pBuff(NULL), 
-								   m_size(0), 
-								   m_capacity(0)
+	Vector(Vector<T, SizeT> &&v) NOEXCEPT : m_pBuff(NULL),
+                                            m_size(0),
+                                            m_capacity(0)
 	{
 		*this = std::move(v);	
 	}
@@ -55,12 +55,12 @@ public:
         clear();
     }
     
-    INLINE iterator begin()
+    INLINE iterator begin() NOEXCEPT
     {
         return m_pBuff;
     }
     
-    INLINE iterator end()
+    INLINE iterator end() NOEXCEPT
     {
         return m_pBuff + m_size;
     }
@@ -103,7 +103,7 @@ public:
         m_size = newSize;
     }
     
-    INLINE void clear()
+    INLINE void clear() NOEXCEPT
     {
         if(m_pBuff)
         {
@@ -114,57 +114,57 @@ public:
         m_capacity  = 0;
     }
         
-    INLINE size_type capacity() const
+    INLINE size_type capacity() const NOEXCEPT
     {
         return m_capacity;
     }
     
-    INLINE size_type size() const
+    INLINE size_type size() const NOEXCEPT
     {
         return m_size;
     }
     
-    INLINE bool empty() const
+    INLINE bool empty() const NOEXCEPT
     {
         return m_size == 0;
     }
     
-    INLINE T &front()
+    INLINE T &front() NOEXCEPT
     {
         return m_pBuff[0];
     }
     
-    INLINE T &back()
+    INLINE T &back() NOEXCEPT
     {
         return m_pBuff[m_size - 1];
     }
     
-    INLINE void pop_back()
+    INLINE void pop_back() NOEXCEPT
     {
         --m_size;
     }
     
-	INLINE T &operator[](size_type index)
+	INLINE T &operator[](size_type index) NOEXCEPT
     {
         assert(index >= 0);
         assert(index < m_size);
         return m_pBuff[index];
     }
 
-    INLINE const T &operator[](size_type index) const
+    INLINE const T &operator[](size_type index) const NOEXCEPT
     {
         assert(index >= 0);
         assert(index < m_size);
         return m_pBuff[index];
     }
     
-    INLINE const value_type *data() const
+    INLINE const value_type *data() const NOEXCEPT
     {
         assert(m_pBuff);
         return &m_pBuff[0];
     }
 
-    INLINE value_type *data()
+    INLINE value_type *data() NOEXCEPT
     {
         assert(m_pBuff);
         return &m_pBuff[0];
@@ -174,10 +174,14 @@ public:
     {
 		if(this != &v)
 		{
-			clear();
+            //clear
+            free(m_pBuff);
+            
 			//copy
+            m_pBuff = NULL;
 			m_size = v.m_size;
 			m_capacity = v.m_capacity;
+            
 			//copy buff
 			if(m_capacity)
 			{
@@ -192,15 +196,22 @@ public:
         return *this;
     }
 
-	INLINE Vector<T, SizeT>& operator=(Vector<T, SizeT> &&v)
+	INLINE Vector<T, SizeT>& operator=(Vector<T, SizeT> &&v) NOEXCEPT
 	{
 		if(this != &v)
 		{
-			clear();
-			//swap
-			std::swap(m_size, v.m_size);
-			std::swap(m_capacity, v.m_capacity);
-			std::swap(m_pBuff, v.m_pBuff);
+            //clear
+            free(m_pBuff);
+            
+            //set new data
+            m_pBuff = v.m_pBuff;
+            m_size = v.m_size;
+            m_capacity = v.m_capacity;
+            
+            //clear data
+            v.m_pBuff = NULL;
+            v.m_size = 0;
+            v.m_capacity = 0;
 		}
 		return *this;
 	}
@@ -213,7 +224,7 @@ private:
 
 
 template <typename T>
-INLINE static T _S_read(Vector<uint8> &rVector, size_t &rpos)
+INLINE static T _S_read(Vector<uint8> &rVector, size_t &rpos) NOEXCEPT
 {
     T r;
     if(rpos + sizeof(T) > rVector.size())

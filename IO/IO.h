@@ -74,7 +74,7 @@ public:
     
     /** Get error number
      */
-    static int ferror();
+    static int ferror() NOEXCEPT;
 };
 
 class IOHandleGuard

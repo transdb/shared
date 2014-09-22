@@ -85,7 +85,7 @@ public:
 
 	/** Gets the buffer size.
 	 */
-	INLINE size_t GetBufferSize()
+	INLINE size_t GetBufferSize() const
     {
         return m_writePos;
     }
