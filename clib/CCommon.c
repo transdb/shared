@@ -21,8 +21,12 @@ int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, bbuff *buffOut, i
     if(ret != Z_OK)
         return ret;
  
-    //buffer for zlib - VLA
-    Bytef *zlibBuff = NULL;
+	//buffer for zlib - VLA
+#ifndef WIN32
+	Bytef zlibBuff[zlibBufferSize];
+#else
+	Bytef *zlibBuff = alloca(sizeof(Bytef) * zlibBufferSize);
+#endif
     
     /* decompress until deflate stream ends or end of file */
     stream.avail_in = (uInt)dataLen;
@@ -67,8 +71,12 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
     if(ret != Z_OK)
         return ret;
     
-    //buffer for zlib - VLA
-    Bytef *zlibBuff = NULL;
+	//buffer for zlib - VLA
+#ifndef WIN32
+	Bytef zlibBuff[zlibBufferSize];
+#else
+	Bytef *zlibBuff = alloca(sizeof(Bytef) * zlibBufferSize);
+#endif
     
     //setup input informations
     stream.next_in = (Bytef*)pData;
