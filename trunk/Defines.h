@@ -66,6 +66,7 @@
     #include <ws2tcpip.h>
     #include <process.h>
 #else
+    #include <ctype.h>
     #include <unistd.h>
     #include <netdb.h>
     #include <fcntl.h>
