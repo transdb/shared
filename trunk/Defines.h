@@ -49,6 +49,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 #ifdef WIN32
     #ifndef WIN32_LEAN_AND_MEAN
@@ -64,7 +65,6 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
     #include <process.h>
-	#include <sys/stat.h>
 #else
     #include <unistd.h>
     #include <netdb.h>
@@ -72,6 +72,7 @@
     #include <sys/time.h>
     #include <sys/times.h>
     #include <arpa/inet.h>
+    #include <sys/ioctl.h>
 
     #ifndef MAC
         #include <linux/types.h>
