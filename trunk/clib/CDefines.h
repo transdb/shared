@@ -14,7 +14,6 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/time.h>
 
 //platform definitions
 #ifdef __APPLE_CC__
