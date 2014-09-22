@@ -5,15 +5,6 @@
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
 //
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <time.h>
-#include <ctype.h>
-#include <sys/stat.h>
-#include <arpa/inet.h>
 #include "../zlib/zlib.h"
 #include "CCommon.h"
 
@@ -31,7 +22,7 @@ int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, bbuff *buffOut, i
         return ret;
  
     //buffer for zlib - VLA
-    Bytef zlibBuff[zlibBufferSize];
+    Bytef *zlibBuff = NULL;
     
     /* decompress until deflate stream ends or end of file */
     stream.avail_in = (uInt)dataLen;
@@ -77,7 +68,7 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
         return ret;
     
     //buffer for zlib - VLA
-    Bytef zlibBuff[zlibBufferSize];
+    Bytef *zlibBuff = NULL;
     
     //setup input informations
     stream.next_in = (Bytef*)pData;

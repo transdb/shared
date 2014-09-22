@@ -8,6 +8,12 @@
 #ifndef CPUID_H
 #define CPUID_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "../Defines.h"
+
 /* SSE42 flag */
 #define SSE42_FEATURE_BIT   (1 << 20)
 /* AVX flag */
@@ -17,7 +23,7 @@
 
 /* CPUID function */
 #ifdef WIN32
-    static inline void cpuid(int *CPUInfo, int InfoType)
+    static void cpuid(int *CPUInfo, int InfoType)
     {
         __cpuid(CPUInfo, InfoType);
     }
@@ -36,6 +42,10 @@
             : "eax", "ebx", "ecx", "edx"      /* no changed registers except output registers */
             );
     }
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif
