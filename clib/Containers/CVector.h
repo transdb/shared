@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "../CDefines.h"
+#include "../../Defines.h"
 
 typedef struct
 {

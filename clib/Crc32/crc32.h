@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "../CDefines.h"
+#include "../../Defines.h"
 
 /** Must be called before use of crc32 function
  */

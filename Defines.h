@@ -20,90 +20,123 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-//data types - platform
-#include "clib/CDefines.h"
+//platform definitions
+#ifdef __APPLE_CC__
+    #define MAC
+#endif
 
-//system includes
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <time.h>
-#include <math.h>
-#include <errno.h>
-#include <fstream>
+//Windows
+#ifdef _M_X64
+    #define X64
+#endif
+#ifdef _WIN32
+    #define WIN32
+#endif
+#if !defined(DEBUG) && defined(WIN32)
+//  #define _SECURE_SCL 0
+//	#define _HAS_EXCEPTIONS 0
+//	#define _CRT_DISABLE_PERFCRIT_LOCKS
+#endif
+#if defined(WIN32) && !defined(WP8)
+    #define _CRT_SECURE_NO_WARNINGS
+//	#define _SCL_SECURE_NO_WARNINGS
+//	#define _HAS_ITERATOR_DEBUGGING 0
+#endif
+
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <stdarg.h>
+//#include <time.h>
+//#include <math.h>
+//#include <errno.h>
 #include <assert.h>
-#include <bitset>
-#include <sys/types.h>
-#include <sys/stat.h>
+//#include <signal.h>
+//#include <sys/types.h>
+//#include <sys/stat.h>
 
 #ifdef WIN32
-	#ifndef WIN32_LEAN_AND_MEAN
-		#define WIN32_LEAN_AND_MEAN
-	#endif
-	#ifndef NOMINMAX
-		#define NOMINMAX
-	#endif
-	#include <windows.h>
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
 
-	#include <winsock2.h>
-	#include <ws2tcpip.h>
-	#include <process.h>
+    #include <windows.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <process.h>
 #else
-    #include <sys/mman.h>
-	#include <sys/time.h>
-	#include <sys/ioctl.h>
-	#include <sys/socket.h>
-    #include <sys/times.h>
-    #include <sys/resource.h>
-	#include <netinet/in.h>
-	#include <arpa/inet.h>
-	#include <unistd.h>
-	#include <netdb.h>
+    #include <unistd.h>
+    #include <netdb.h>
     #include <fcntl.h>
-#ifndef MAC
-	#include <linux/types.h>
-#endif
+    #include <sys/time.h>
+    #include <sys/times.h>
+    #include <arpa/inet.h>
+
+    #ifndef MAC
+        #include <linux/types.h>
+    #endif
 #endif
 
-#include <set>
-#include <list>
-#include <string>
-#include <map>
-#include <queue>
-#include <sstream>
-#include <algorithm>
-#include <cstring>
-#include <climits>
-#include <signal.h>
+//C++ stuff
+#ifdef __cplusplus
+    #include <set>
+    #include <list>
+    #include <map>
+    #include <queue>
+    #include <sstream>
+#endif
 
 //C++11 stuff - containers - shared_ptr
-#include <unordered_map>
-#include <unordered_set>
-#include <array>
-#include <memory>
-#include <mutex>
-#include <atomic>
-#include <condition_variable>
-#include <chrono>
-#include <thread>
-#include <type_traits>
-
-#ifdef WIN32
-    #define localtime(a,b) localtime_s(b,a)
-    #define snprintf _snprintf
-    #define strnicmp _strnicmp
-    #define stricmp _stricmp
-    #define atoll _atoi64
-    #define NOEXCEPT _NOEXCEPT
-#else
-    #define localtime localtime_r
-    #define stricmp strcasecmp
-    #define strnicmp strncasecmp
-    #define NOEXCEPT noexcept
+#ifdef __cplusplus
+    #include <unordered_map>
+    #include <unordered_set>
+    #include <array>
+    #include <memory>
+    #include <mutex>
+    #include <atomic>
+    #include <condition_variable>
+    #include <chrono>
+    #include <thread>
 #endif
 
-#ifndef WIN32
-    static inline uint64 GetTickCount64() NOEXCEPT
+//data types
+#ifdef WIN32
+    typedef signed __int64 int64;
+    typedef signed __int32 int32;
+    typedef signed __int16 int16;
+    typedef signed __int8 int8;
+
+    typedef unsigned __int64 uint64;
+    typedef unsigned __int32 uint32;
+    typedef unsigned __int16 uint16;
+    typedef unsigned __int8 uint8;
+#else
+    typedef int64_t int64;
+    typedef int32_t int32;
+    typedef int16_t int16;
+    typedef int8_t int8;
+
+    typedef uint64_t uint64;
+    typedef uint32_t uint32;
+    typedef uint16_t uint16;
+    typedef uint8_t uint8;
+
+    //MS datatypes
+    typedef uint32_t    DWORD;
+    typedef intptr_t    INT_PTR;
+    typedef size_t      SIZE_T;
+    typedef uint32_t    UINT;
+    typedef uint8_t     BYTE;
+    typedef int32_t     INT;
+    typedef int         HANDLE;
+
+    //imports
+    #define MAX_PATH 				1024
+    #define INVALID_HANDLE_VALUE    -1
+
+    static inline uint64 GetTickCount64()
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -111,15 +144,35 @@
     }
 #endif
 
+#ifdef WIN32
+    #define localtime(a,b) localtime_s(b,a)
+    #define snprintf _snprintf
+    #define strnicmp _strnicmp
+    #define stricmp _stricmp
+    #define I64FMT "%016I64X"
+    #define I64FMTD "%I64u"
+    #define SI64FMTD "%I64d"
+    #define atoll _atoi64
+    #define NOEXCEPT _NOEXCEPT
+#else
+    #define localtime localtime_r
+    #define stricmp strcasecmp
+    #define strnicmp strncasecmp
+    #define I64FMT "%016llX"
+    #define I64FMTD "%llu"
+    #define SI64FMTD "%lld"
+    #define NOEXCEPT noexcept
+#endif
+
 //time
-extern time_t   UNIXTIME;
-extern tm       g_localTime;
+extern time_t       UNIXTIME;
+extern struct tm    g_localTime;
 
 //inline
 #ifdef DEBUG
-	#define INLINE
+    #define INLINE
 #else
-	#define INLINE inline
+    #define INLINE inline
 #endif
 
 #ifdef WIN32
@@ -131,11 +184,5 @@ extern tm       g_localTime;
 #define DISALLOW_COPY_AND_ASSIGN(TypeName)      \
     TypeName(const TypeName&);                  \
     void operator=(const TypeName&)
-
-//singleton
-#include "Singleton.h"
-
-//common functions
-#include "CommonFunctions.h"
 
 #endif
