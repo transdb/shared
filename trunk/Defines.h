@@ -88,6 +88,7 @@
     #include <map>
     #include <queue>
     #include <sstream>
+    #include <algorithm>
 #endif
 
 //C++11 stuff - containers - shared_ptr
