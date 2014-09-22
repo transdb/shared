@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <signal.h>
 #include <sys/stat.h>
 
 #ifdef WIN32
@@ -62,7 +63,6 @@
 
 	#include <malloc.h>
 	#include <time.h>
-	#include <signal.h>
     #include <windows.h>
     #include <winsock2.h>
     #include <ws2tcpip.h>
