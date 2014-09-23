@@ -152,7 +152,7 @@
     #define MAX_PATH 				PATH_MAX
     #define INVALID_HANDLE_VALUE    -1
 
-    static INLINE uint64 GetTickCount64()
+    static inline uint64 GetTickCount64()
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);
