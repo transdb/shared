@@ -16,7 +16,7 @@ extern "C" {
 
 typedef struct CByteBuffer
 {
-    uint8   *storage;
+    uint8*  storage;
     size_t  size;
     size_t  capacity;
 	size_t  rpos;
@@ -50,6 +50,10 @@ void bbuff_read(bbuff *self, void *dst, size_t len);
 /** Put data to bytebuffer to specified position
  */
 void bbuff_put(bbuff *self, size_t pos, const void *src, size_t len);
+    
+/** Clear bytebuffer data
+ */
+void bbuff_clear(bbuff* self);
     
 #ifdef __cplusplus
 }

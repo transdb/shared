@@ -7,16 +7,28 @@
 
 #include "CByteBuffer.h"
 
+#ifdef INTEL_SCALABLE_ALLOCATOR
+    #include "tbb/scalable_allocator.h"
+    #define _CALLOC(num,size)   scalable_calloc(num, size)
+    #define _REALLOC(ptr,size)  scalable_realloc(ptr, size)
+    #define _FREE(ptr)          scalable_free(ptr)
+#else
+    #define _CALLOC(num,size)   calloc(num, size)
+    #define _REALLOC(ptr,size)  realloc(ptr, size)
+    #define _FREE(ptr)          free(ptr)
+#endif
+
 bbuff *bbuff_create(void)
 {
-    bbuff *p = calloc(1, sizeof(bbuff));
+    bbuff *p = _CALLOC(1, sizeof(bbuff));
+    assert(p);
     return p;
 }
 
 void bbuff_destroy(bbuff *self)
 {
-    free(self->storage);
-    free(self);
+    _FREE(self->storage);
+    _FREE(self);
 }
 
 void bbuff_reserve(bbuff *self, size_t ressize)
@@ -29,10 +41,12 @@ void bbuff_reserve(bbuff *self, size_t ressize)
         //set capacity
         self->capacity = ressize;
         //resize buffer
-        pNewBuffer = realloc(self->storage, ressize);
+        pNewBuffer = _REALLOC(self->storage, ressize);
         if(pNewBuffer == NULL)
+        {
+            assert(false);
             return;
-        
+        }
         self->storage = pNewBuffer;
     }
 }
@@ -47,17 +61,17 @@ void bbuff_resize(bbuff *self, size_t newsize)
 
 void bbuff_append(bbuff *self, const void *src, size_t len)
 {
-    if(len == 0)
-        return;
-    
-    if(self->size < (self->wpos + len))
+    if(len > 0)
     {
-        bbuff_reserve(self, self->wpos + len);
-        self->size = self->wpos + len;
+        if(self->size < (self->wpos + len))
+        {
+            bbuff_reserve(self, self->wpos + len);
+            self->size = self->wpos + len;
+        }
+        
+        memcpy(self->storage + self->wpos, src, len);
+        self->wpos += len;
     }
-    
-    memcpy(self->storage + self->wpos, src, len);
-    self->wpos += len;
 }
 
 void bbuff_read(bbuff *self, void *dst, size_t len)
@@ -79,6 +93,11 @@ void bbuff_put(bbuff *self, size_t pos, const void *src, size_t len)
     memcpy(self->storage + pos, src, len);
 }
 
+void bbuff_clear(bbuff* self)
+{
+    _FREE(self->storage);
+    memset(self, 0, sizeof(bbuff));
+}
 
 
 

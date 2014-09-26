@@ -7,63 +7,67 @@
 
 #include "CVector.h"
 
-CVector *CVector_create(size_t itemSize)
+cvector *cvector_create(size_t itemSize)
 {
-    CVector *pCVector = calloc(1, sizeof(CVector));
-    if(pCVector == NULL)
+    cvector *vec = calloc(1, sizeof(cvector));
+    if(vec == NULL)
         return NULL;
     
-    pCVector->m_itemSize = itemSize;
-    return pCVector;
+    vec->itemSize = itemSize;
+    return vec;
 }
 
-void CVector_destroy(CVector *pCVector)
+void cvector_destroy(cvector* self)
 {
-    free(pCVector->m_pBuff);
-    free(pCVector);
+    free(self->data);
+    free(self);
 }
 
-void CVector_clear(CVector *pCVector)
+void cvector_clear(cvector* self)
 {
-    free(pCVector->m_pBuff);
-    pCVector->m_size = 0;
-    pCVector->m_capacity = 0;
+    free(self->data);
+    self->size = 0;
+    self->capacity = 0;
 }
 
-void CVector_reserve(CVector *pCVector, size_t newCapacity)
+void cvector_reserve(cvector* self, size_t newCapacity)
 {
-    assert(newCapacity >= 0);
+    //for WP8 - C89
+    void *pNewBuffer;
     
-    if(newCapacity > pCVector->m_capacity)
+    if(newCapacity > self->capacity)
     {
         //set capacity
-        pCVector->m_capacity = newCapacity;
+        self->capacity = newCapacity;
         //resize buffer
-        void *pNewBuffer = realloc(pCVector->m_pBuff, pCVector->m_itemSize * newCapacity);
+        pNewBuffer = realloc(self->data, self->itemSize * newCapacity);
         if(pNewBuffer == NULL)
             return;
         
-        pCVector->m_pBuff = pNewBuffer;
+        self->data = pNewBuffer;
     }
 }
 
-void CVector_resize(CVector *pCVector, size_t newSize)
+void cvector_resize(cvector* self, size_t newSize)
 {
-    CVector_reserve(pCVector, newSize);
-    pCVector->m_size = newSize;
+    cvector_reserve(self, newSize);
+    self->size = newSize;
 }
 
-void CVector_push_back(CVector *pCVector, const void *pValue)
+void cvector_push_back(cvector* self, const void *value)
 {
-    if(pCVector->m_capacity == pCVector->m_size)
+    //for WP8 - C89
+    void *dst;
+    
+    if(self->capacity == self->size)
     {
-        size_t newCapacity = pCVector->m_capacity == 0 ? 16 : pCVector->m_capacity * 2;
-        CVector_reserve(pCVector, newCapacity);
+        size_t newCapacity = self->capacity == 0 ? 16 : self->capacity * 2;
+        cvector_reserve(self, newCapacity);
     }
     
-    void *pDest = (pCVector->m_pBuff + (pCVector->m_itemSize * pCVector->m_size));
-    memcpy(pDest, pValue, pCVector->m_itemSize);
-    ++pCVector->m_size;
+    dst = (self->data + (self->itemSize * self->size));
+    memcpy(dst, value, self->itemSize);
+    ++self->size;
 }
 
 
