@@ -222,17 +222,4 @@ private:
     SizeT       m_capacity;
 };
 
-
-template <typename T>
-INLINE static T _S_read(Vector<uint8> &rVector, size_t &rpos) NOEXCEPT
-{
-    T r;
-    if(rpos + sizeof(T) > rVector.size())
-        r = (T)0;
-    else
-        memcpy(&r, &rVector[rpos], sizeof(T));
-    rpos += sizeof(T);
-    return r;
-}
-
 #endif

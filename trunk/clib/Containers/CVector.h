@@ -14,38 +14,38 @@ extern "C" {
 
 #include "../../Defines.h"
 
-typedef struct
+typedef struct CVector
 {
-    uint8   *m_pBuff;
-    size_t  m_size;
-    size_t  m_capacity;
-    size_t  m_itemSize;
-} CVector;
+    uint8*  data;
+    size_t  size;
+    size_t  capacity;
+    size_t  itemSize;
+} cvector;
 
 
 /**
  */
-CVector *CVector_create(size_t itemSize);
+cvector *cvector_create(size_t itemSize);
 
 /**
  */
-void CVector_destroy(CVector *pCVector);
+void cvector_destroy(cvector* self);
 
 /**
  */
-void CVector_clear(CVector *pCVector);
+void cvector_clear(cvector* self);
 
 /**
  */
-void CVector_reserve(CVector *pCVector, size_t newCapacity);
+void cvector_reserve(cvector* self, size_t newCapacity);
 
 /**
  */
-void CVector_resize(CVector *pCVector, size_t newSize);
+void cvector_resize(cvector* self, size_t newSize);
 
 /**
  */
-void CVector_push_back(CVector *pCVector, const void *pValue);
+void cvector_push_back(cvector* self, const void *value);
 
 
 #ifdef __cplusplus
