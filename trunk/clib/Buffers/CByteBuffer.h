@@ -14,6 +14,17 @@ extern "C" {
 
 #include "../../Defines.h"
 
+#ifdef INTEL_SCALABLE_ALLOCATOR
+    #include "tbb/scalable_allocator.h"
+    #define _CALLOC(num,size)   scalable_calloc(num, size)
+    #define _REALLOC(ptr,size)  scalable_realloc(ptr, size)
+    #define _FREE(ptr)          scalable_free(ptr)
+#else
+    #define _CALLOC(num,size)   calloc(num, size)
+    #define _REALLOC(ptr,size)  realloc(ptr, size)
+    #define _FREE(ptr)          free(ptr)
+#endif
+    
 typedef struct CByteBuffer
 {
     uint8*  storage;
@@ -25,35 +36,98 @@ typedef struct CByteBuffer
 
 /** Create bytebuffer, storage is not allocated
  */
-bbuff *bbuff_create(void);
+#define bbuff_create(self)                                                              \
+    do                                                                                  \
+    {                                                                                   \
+        self = (bbuff*)_CALLOC(1, sizeof(bbuff));                                       \
+    }while(0)
 
 /** Destroy bytebuffer and free storage
  */
-void bbuff_destroy(bbuff *self);
+#define bbuff_destroy(self)                                                             \
+    do                                                                                  \
+    {                                                                                   \
+        _FREE((self)->storage);                                                         \
+        _FREE(self);                                                                    \
+    }while(0)
+    
     
 /** Reserve space in storage
  */
-void bbuff_reserve(bbuff *self, size_t ressize);
+#define bbuff_reserve(self, ressize)                                                    \
+    do                                                                                  \
+    {                                                                                   \
+        if(ressize > (self)->capacity)                                                  \
+        {                                                                               \
+            (self)->capacity = ressize;                                                 \
+            if(((self)->storage = (uint8*)_REALLOC((self)->storage, ressize)) == NULL)  \
+            {                                                                           \
+                assert(false);                                                          \
+            }                                                                           \
+        }                                                                               \
+    }while(0)
     
 /** Resize storage
  */
-void bbuff_resize(bbuff *self, size_t newsize);
+#define bbuff_resize(self, newsize)                                                     \
+    do                                                                                  \
+    {                                                                                   \
+        bbuff_reserve(self, newsize);                                                   \
+        (self)->size = newsize;                                                         \
+        (self)->rpos = 0;                                                               \
+        (self)->wpos = (self)->size;                                                    \
+    }while(0)
 
 /** Append data to bytebuffer
  */
-void bbuff_append(bbuff *self, const void *src, size_t len);
+#define bbuff_append(self, src, len)                                                    \
+    do                                                                                  \
+    {                                                                                   \
+        if(len > 0)                                                                     \
+        {                                                                               \
+            if((self)->size < ((self)->wpos + len))                                     \
+            {                                                                           \
+                bbuff_reserve(self, (self)->wpos + len);                                \
+                (self)->size = (self)->wpos + len;                                      \
+            }                                                                           \
+            memcpy((self)->storage + (self)->wpos, src, len);                           \
+            (self)->wpos += len;                                                        \
+        }                                                                               \
+    }while(0)
    
 /** Read data from bytebuffer
  */
-void bbuff_read(bbuff *self, void *dst, size_t len);
+#define bbuff_read(self, dst, len)                                                      \
+    do                                                                                  \
+    {                                                                                   \
+        if(((self)->rpos + len) <= (self)->size)                                        \
+        {                                                                               \
+            memcpy(dst, (self)->storage + (self)->rpos, len);                           \
+        }                                                                               \
+        else                                                                            \
+        {                                                                               \
+            memset(dst, 0, len);                                                        \
+        }                                                                               \
+        (self)->rpos += len;                                                            \
+    }while(0)
     
 /** Put data to bytebuffer to specified position
  */
-void bbuff_put(bbuff *self, size_t pos, const void *src, size_t len);
+#define bbuff_put(self, pos, src, len)                                                  \
+    do                                                                                  \
+    {                                                                                   \
+        assert(pos + len <= (self)->size);                                              \
+        memcpy((self)->storage + pos, src, len);                                        \
+    }while(0)
     
 /** Clear bytebuffer data
  */
-void bbuff_clear(bbuff* self);
+#define bbuff_clear(self)                                                               \
+    do                                                                                  \
+    {                                                                                   \
+        _FREE((self)->storage);                                                         \
+        memset(self, 0, sizeof(bbuff));                                                 \
+    }while(0)
     
 #ifdef __cplusplus
 }
