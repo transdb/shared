@@ -22,7 +22,7 @@ int CCommon_decompressGzip(const uint8 *pData, size_t dataLen, bbuff *buffOut, i
         return ret;
  
 	//buffer for zlib - VLA
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__STDC_NO_VLA__)
 	Bytef zlibBuff[zlibBufferSize];
 #else
 	Bytef *zlibBuff = alloca(sizeof(Bytef) * zlibBufferSize);
@@ -72,7 +72,7 @@ int CCommon_compressGzip(int compressionLevel, const uint8 *pData, size_t dataLe
         return ret;
     
 	//buffer for zlib - VLA
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__STDC_NO_VLA__)
 	Bytef zlibBuff[zlibBufferSize];
 #else
 	Bytef *zlibBuff = alloca(sizeof(Bytef) * zlibBufferSize);
