@@ -124,5 +124,5 @@ typedef struct CByteBuffer
         _FREE((self)->storage);                                                         \
         memset(self, 0, sizeof(bbuff));                                                 \
     }while(0)
-    
+
 #endif
