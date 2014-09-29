@@ -8,10 +8,6 @@
 #ifndef CBYTEBUFFER_H
 #define CBYTEBUFFER_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "../../Defines.h"
 
 #ifdef INTEL_SCALABLE_ALLOCATOR
@@ -129,8 +125,4 @@ typedef struct CByteBuffer
         memset(self, 0, sizeof(bbuff));                                                 \
     }while(0)
     
-#ifdef __cplusplus
-}
-#endif
-
 #endif
