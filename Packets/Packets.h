@@ -36,7 +36,7 @@ public:
     void Initialize(uint16 opcode, size_t newres = 200)
     {
         clear();
-		m_storage.reserve(newres);
+        ByteBuffer::reserve(newres);
         m_opcode = opcode;
     }
 

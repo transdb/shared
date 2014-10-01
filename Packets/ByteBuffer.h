@@ -21,46 +21,49 @@
 #define BYTEBUFFER_H
 
 #include "../Defines.h"
-#include "../Containers/Vector.h"
+#include "../clib/Buffers/CByteBuffer.h"
 
 class ByteBuffer
 {
 public:
-	ByteBuffer(): m_rpos(0), m_wpos(0), m_storage(512)
+	ByteBuffer()
 	{
-        
+        bbuff_create(m_pBuff);
+        bbuff_reserve(m_pBuff, 512);
 	}
     
-	ByteBuffer(size_t res): m_rpos(0), m_wpos(0), m_storage(res)
+	ByteBuffer(size_t res)
 	{
-        
+        bbuff_create(m_pBuff);
+        bbuff_reserve(m_pBuff, res);
 	}
     
     //copy ctor
-	ByteBuffer(const ByteBuffer &buf): m_rpos(0), m_wpos(0)
+	ByteBuffer(const ByteBuffer &buf)
     {
         *this = buf;
     }
     
     //moveable ctor
-    ByteBuffer(ByteBuffer &&buf) : m_rpos(0), m_wpos(0)
+    ByteBuffer(ByteBuffer &&buf)
     {
         *this = std::move(buf);
     }
     
 	virtual ~ByteBuffer()
     {
-        
+        bbuff_destroy(m_pBuff);
+        m_pBuff = NULL;
     }
     
     ByteBuffer &operator=(const ByteBuffer &buf)
     {
         if(this != &buf)
         {
-            clear();
-            m_rpos = buf.m_rpos;
-            m_wpos = buf.m_wpos;
-            m_storage = buf.m_storage;
+            bbuff_clear(m_pBuff);
+            bbuff_append(m_pBuff, buf.m_pBuff->storage, buf.m_pBuff->size);
+            m_pBuff->rpos = buf.m_pBuff->rpos;
+            m_pBuff->wpos = buf.m_pBuff->wpos;
         }
         return *this;
     }
@@ -69,17 +72,14 @@ public:
     {
         if(this != &buf)
         {
-            m_storage = std::move(buf.m_storage);
-            m_rpos = std::move(buf.m_rpos);
-            m_wpos = std::move(buf.m_wpos);
+            m_pBuff = std::move(buf.m_pBuff);
         }
         return *this;
     }
     
 	void clear()
 	{
-		m_storage.clear();
-		m_rpos = m_wpos = 0;
+        bbuff_clear(m_pBuff);
 	}
     
 	template <typename T>
@@ -268,31 +268,31 @@ public:
     
 	size_t rpos() const
 	{
-		return m_rpos;
+		return m_pBuff->rpos;
 	};
     
 	size_t rpos(size_t rpos)
 	{
-		m_rpos = rpos;
-		return m_rpos;
+		m_pBuff->rpos = rpos;
+		return m_pBuff->rpos;
 	}
     
 	size_t wpos()
 	{
-		return m_wpos;
+		return m_pBuff->wpos;
 	}
     
 	size_t wpos(size_t wpos)
 	{
-		m_wpos = wpos;
-		return m_wpos;
+		m_pBuff->wpos = wpos;
+		return m_pBuff->wpos;
 	}
     
 	template <typename T>
     T read()
 	{
-		T r = read<T>(m_rpos);
-		m_rpos += sizeof(T);
+        T r;
+        bbuff_read(m_pBuff, &r, sizeof(T));
 		return r;
 	}
     
@@ -305,47 +305,37 @@ public:
 		}
 		else
 		{
-			T value;
-			memcpy(&value, &m_storage[pos], sizeof(T));
+            T value;
+            bbuff_read(m_pBuff, &value, sizeof(T));
 			return value;
 		}
 	}
     
 	void read(uint8 *dest, size_t len)
 	{
-		if(m_rpos + len <= size())
-		{
-			memcpy(dest, &m_storage[m_rpos], len);
-		}
-		else
-		{
-			memset(dest, 0, len);
-		}
-		m_rpos += len;
+        bbuff_read(m_pBuff, dest, len);
 	}
     
 	const uint8 *contents() const
 	{
-		return m_storage.data();
+		return m_pBuff->storage;
 	}
     
 	size_t size() const
 	{
-		return m_storage.size();
+		return m_pBuff->size;
 	}
     
 	void resize(size_t newsize)
 	{
-		m_storage.resize(newsize);
-		m_rpos = 0;
-		m_wpos = size();
+        bbuff_resize(m_pBuff, newsize);
 	}
     
 	void reserve(size_t ressize)
 	{
 		if(ressize > size())
 		{
-			m_storage.reserve(ressize);
+            bbuff_reserve(m_pBuff, ressize);
 		}
 	}
     
@@ -367,16 +357,7 @@ public:
     
 	void append(const uint8 *src, size_t cnt)
 	{
-		if(!cnt)
-            return;
-        
-		if(m_storage.size() < m_wpos + cnt)
-		{
-			m_storage.resize(m_wpos + cnt);
-		}
-        
-		memcpy(&m_storage[m_wpos], src, cnt);
-		m_wpos += cnt;
+        bbuff_append(m_pBuff, src, cnt);
 	}
     
 	void append(const ByteBuffer& buffer)
@@ -389,8 +370,7 @@ public:
     
 	void put(size_t pos, const uint8 * src, size_t cnt)
 	{
-		assert(pos + cnt <= size());
-		memcpy(&m_storage[pos], src, cnt);
+        bbuff_put(m_pBuff, pos, src, cnt);
 	}
     
 	void hexlike()
@@ -451,14 +431,11 @@ public:
     
 	void reverse()
 	{
-		std::reverse(m_storage.begin(), m_storage.end());
+		std::reverse(m_pBuff->storage, m_pBuff->storage + m_pBuff->size);
 	}
     
 protected:
-	// read and write positions
-	size_t				m_rpos;
-	size_t				m_wpos;
-	Vector<uint8>       m_storage;
+    bbuff*  m_pBuff;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
