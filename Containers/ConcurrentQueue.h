@@ -29,7 +29,7 @@ public:
      */
     bool put(const T &item, bool block = true, time_t timeout = 0)
     {
-        std::unique_lock<std::mutex> rLock(mutex);
+        std::unique_lock<std::mutex> rLock(m_rLock);
         if(m_maxsize > 0)
         {
             if(!block)
@@ -41,7 +41,7 @@ public:
             {
                 while(queue.size() == m_maxsize)
                 {
-                    not_full.wait(rLock);
+                    m_rNotFullCond.wait(rLock);
                 }
             }
             else
@@ -56,14 +56,14 @@ public:
 //                    not_full.wait_for(rLock, std::chrono::seconds(remaining));
 //                }
                 
-                bool status = not_full.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
+                bool status = m_rNotFullCond.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
                 if(status == false)
                     return false;
             }
         }
         
         queue.push(item);
-        not_empty.notify_one();
+        m_rNotEmptyCond.notify_one();
         return true;
     }
     
@@ -73,7 +73,7 @@ public:
      */
     bool get(T &item, bool block = true, time_t timeout = 0)
     {
-        std::unique_lock<std::mutex> rLock(mutex);
+        std::unique_lock<std::mutex> rLock(m_rLock);
         if(!block)
         {
             if(queue.empty())
@@ -83,7 +83,7 @@ public:
         {
             while(queue.empty())
             {
-                not_empty.wait(rLock);
+                m_rNotEmptyCond.wait(rLock);
             }
         }
         else
@@ -98,14 +98,14 @@ public:
 //                not_empty.wait_for(rLock, std::chrono::seconds(remaining));
 //            }
             
-            bool status = not_empty.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
+            bool status = m_rNotEmptyCond.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
             if(status == false)
                 return false;
         }
         
         item = queue.front();
         queue.pop();
-        not_full.notify_one();
+        m_rNotFullCond.notify_one();
         return true;
     }
     
@@ -120,18 +120,19 @@ public:
      */
     INLINE void abort()
     {
-        std::unique_lock<std::mutex> rLock(mutex);
-        not_empty.notify_all();
-        not_full.notify_all();
+        std::unique_lock<std::mutex> rLock(m_rLock);
+        m_rNotEmptyCond.notify_all();
+        m_rNotFullCond.notify_all();
     }
     
 private:
     DISALLOW_COPY_AND_ASSIGN(ConcurrentQueue);
     
+    //variable
     std::queue<T>               queue;
-    std::condition_variable     not_empty;
-    std::condition_variable     not_full;
-    std::mutex                  mutex;
+    std::condition_variable     m_rNotEmptyCond;
+    std::condition_variable     m_rNotFullCond;
+    std::mutex                  m_rLock;
     size_t                      m_maxsize;
 };
 
