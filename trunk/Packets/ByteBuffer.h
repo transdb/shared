@@ -218,7 +218,7 @@ public:
 		return *this;
 	}
     
-	INLINE INLINE ByteBuffer &operator>>(int16 &value) NOEXCEPT
+	INLINE ByteBuffer &operator>>(int16 &value) NOEXCEPT
 	{
 		value = read<int16>();
 		return *this;
