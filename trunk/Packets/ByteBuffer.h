@@ -26,27 +26,29 @@
 class ByteBuffer
 {
 public:
-	ByteBuffer()
+	ByteBuffer() NOEXCEPT
 	{
         bbuff_create(m_pBuff);
         bbuff_reserve(m_pBuff, 512);
 	}
     
-	ByteBuffer(size_t res)
+	ByteBuffer(size_t res) NOEXCEPT
 	{
         bbuff_create(m_pBuff);
         bbuff_reserve(m_pBuff, res);
 	}
     
     //copy ctor
-	ByteBuffer(const ByteBuffer &buf)
+	ByteBuffer(const ByteBuffer &buf) NOEXCEPT
     {
+        bbuff_create(m_pBuff);
         *this = buf;
     }
     
     //moveable ctor
-    ByteBuffer(ByteBuffer &&buf)
+    ByteBuffer(ByteBuffer &&buf) NOEXCEPT
     {
+        bbuff_create(m_pBuff);
         *this = std::move(buf);
     }
     
@@ -56,7 +58,7 @@ public:
         m_pBuff = NULL;
     }
     
-    ByteBuffer &operator=(const ByteBuffer &buf)
+    INLINE ByteBuffer &operator=(const ByteBuffer &buf) NOEXCEPT
     {
         if(this != &buf)
         {
@@ -68,109 +70,109 @@ public:
         return *this;
     }
     
-    ByteBuffer &operator=(ByteBuffer &&buf)
+    INLINE ByteBuffer &operator=(ByteBuffer &&buf) NOEXCEPT
     {
         if(this != &buf)
         {
-            m_pBuff = std::move(buf.m_pBuff);
+            std::swap(m_pBuff, buf.m_pBuff);
         }
         return *this;
     }
     
-	void clear()
+	INLINE void clear() NOEXCEPT
 	{
         bbuff_clear(m_pBuff);
 	}
     
 	template <typename T>
-    void append(T value)
+    INLINE void append(T value) NOEXCEPT
 	{
 		append((uint8*)&value, sizeof(value));
 	}
     
 	template <typename T>
-    void put(size_t pos, T value)
+    INLINE void put(size_t pos, T value) NOEXCEPT
 	{
 		put(pos,(uint8*)&value, sizeof(value));
 	}
     
 	// stream like operators for storing data
-	ByteBuffer &operator<<(bool value)
+	INLINE ByteBuffer &operator<<(bool value) NOEXCEPT
 	{
 		append<char>((char)value);
 		return *this;
 	}
     
 	// unsigned
-	ByteBuffer &operator<<(uint8 value)
+	INLINE ByteBuffer &operator<<(uint8 value) NOEXCEPT
 	{
 		append<uint8>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(uint16 value)
+	INLINE ByteBuffer &operator<<(uint16 value) NOEXCEPT
 	{
 		append<uint16>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(uint32 value)
+	INLINE ByteBuffer &operator<<(uint32 value) NOEXCEPT
 	{
 		append<uint32>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(uint64 value)
+	INLINE ByteBuffer &operator<<(uint64 value) NOEXCEPT
 	{
 		append<uint64>(value);
 		return *this;
 	}
     
 	// signed as in 2e complement
-	ByteBuffer &operator<<(int8 value)
+	INLINE ByteBuffer &operator<<(int8 value) NOEXCEPT
 	{
 		append<int8>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(int16 value)
+	INLINE ByteBuffer &operator<<(int16 value) NOEXCEPT
 	{
 		append<int16>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(int32 value)
+	INLINE ByteBuffer &operator<<(int32 value) NOEXCEPT
 	{
 		append<int32>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(int64 value)
+	INLINE ByteBuffer &operator<<(int64 value) NOEXCEPT
 	{
 		append<int64>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(float value)
+	INLINE ByteBuffer &operator<<(float value) NOEXCEPT
 	{
 		append<float>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(double value)
+	INLINE ByteBuffer &operator<<(double value) NOEXCEPT
 	{
 		append<double>(value);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(const std::string &value)
+	INLINE ByteBuffer &operator<<(const std::string &value) NOEXCEPT
 	{
 		append((uint8*)value.c_str(), value.length());
 		append((uint8)0);
 		return *this;
 	}
     
-	ByteBuffer &operator<<(const char *str)
+	INLINE ByteBuffer &operator<<(const char *str) NOEXCEPT
 	{
 		append((uint8*)str, strlen(str));
 		append((uint8)0);
@@ -178,69 +180,69 @@ public:
 	}
     
 	// stream like operators for reading data
-	ByteBuffer &operator>>(bool &value)
+	INLINE ByteBuffer &operator>>(bool &value) NOEXCEPT
 	{
 		value = read<char>() > 0 ? true : false;
 		return *this;
 	}
     
 	//unsigned
-	ByteBuffer &operator>>(uint8 &value)
+	INLINE ByteBuffer &operator>>(uint8 &value) NOEXCEPT
 	{
 		value = read<uint8>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(uint16 &value)
+	INLINE ByteBuffer &operator>>(uint16 &value) NOEXCEPT
 	{
 		value = read<uint16>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(uint32 &value)
+	INLINE ByteBuffer &operator>>(uint32 &value) NOEXCEPT
 	{
 		value = read<uint32>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(uint64 &value)
+	INLINE ByteBuffer &operator>>(uint64 &value) NOEXCEPT
 	{
 		value = read<uint64>();
 		return *this;
 	}
     
 	//signed as in 2e complement
-	ByteBuffer &operator>>(int8 &value)
+	INLINE ByteBuffer &operator>>(int8 &value) NOEXCEPT
 	{
 		value = read<int8>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(int16 &value)
+	INLINE INLINE ByteBuffer &operator>>(int16 &value) NOEXCEPT
 	{
 		value = read<int16>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(int32 &value)
+	INLINE ByteBuffer &operator>>(int32 &value) NOEXCEPT
 	{
 		value = read<int32>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(int64 &value)
+	INLINE ByteBuffer &operator>>(int64 &value) NOEXCEPT
 	{
 		value = read<int64>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(float &value)
+	INLINE ByteBuffer &operator>>(float &value) NOEXCEPT
 	{
 		value = read<float>();
 		return *this;
 	}
     
-	ByteBuffer &operator>>(double &value)
+	INLINE ByteBuffer &operator>>(double &value) NOEXCEPT
 	{
 		value = read<double>();
 		return *this;
@@ -261,35 +263,35 @@ public:
 		return *this;
 	}
     
-	uint8 operator[](size_t pos) const
+	INLINE uint8 operator[](size_t pos) const NOEXCEPT
 	{
 		return read<uint8>(pos);
 	}
     
-	size_t rpos() const
+	INLINE size_t rpos() const NOEXCEPT
 	{
 		return m_pBuff->rpos;
-	};
+	}
     
-	size_t rpos(size_t rpos)
+	INLINE size_t rpos(size_t rpos) NOEXCEPT
 	{
 		m_pBuff->rpos = rpos;
 		return m_pBuff->rpos;
 	}
     
-	size_t wpos()
+	INLINE size_t wpos() NOEXCEPT
 	{
 		return m_pBuff->wpos;
 	}
     
-	size_t wpos(size_t wpos)
+	INLINE size_t wpos(size_t wpos) NOEXCEPT
 	{
 		m_pBuff->wpos = wpos;
 		return m_pBuff->wpos;
 	}
     
 	template <typename T>
-    T read()
+    INLINE T read() NOEXCEPT
 	{
         T r;
         bbuff_read(m_pBuff, &r, sizeof(T));
@@ -297,7 +299,7 @@ public:
 	}
     
 	template <typename T>
-    T read(size_t pos) const
+    INLINE T read(size_t pos) const NOEXCEPT
 	{
 		if(pos + sizeof(T) > size())
 		{
@@ -311,27 +313,27 @@ public:
 		}
 	}
     
-	void read(uint8 *dest, size_t len)
+	INLINE void read(uint8 *dest, size_t len) NOEXCEPT
 	{
         bbuff_read(m_pBuff, dest, len);
 	}
     
-	const uint8 *contents() const
+	INLINE const uint8 *contents() const NOEXCEPT
 	{
 		return m_pBuff->storage;
 	}
     
-	size_t size() const
+	INLINE size_t size() const NOEXCEPT
 	{
 		return m_pBuff->size;
 	}
     
-	void resize(size_t newsize)
+	INLINE void resize(size_t newsize) NOEXCEPT
 	{
         bbuff_resize(m_pBuff, newsize);
 	}
     
-	void reserve(size_t ressize)
+	INLINE void reserve(size_t ressize) NOEXCEPT
 	{
 		if(ressize > size())
 		{
@@ -339,28 +341,28 @@ public:
 		}
 	}
     
-	void append(const std::string & str)
+	INLINE void append(const std::string & str) NOEXCEPT
 	{
 		append((uint8*)str.c_str(), str.length());
 		append<uint8>(0);
 	}
     
-	void append(const char * src, size_t cnt)
+	INLINE void append(const char * src, size_t cnt) NOEXCEPT
 	{
 		append((const uint8*)src, cnt);
 	}
     
-	void append(const void * src, size_t cnt)
+	INLINE void append(const void * src, size_t cnt) NOEXCEPT
 	{
 		append((const uint8*)src, cnt);
 	}
     
-	void append(const uint8 *src, size_t cnt)
+	INLINE void append(const uint8 *src, size_t cnt) NOEXCEPT
 	{
         bbuff_append(m_pBuff, src, cnt);
 	}
     
-	void append(const ByteBuffer& buffer)
+	INLINE void append(const ByteBuffer& buffer) NOEXCEPT
 	{
 		if(buffer.size() > 0)
 		{
@@ -368,12 +370,12 @@ public:
 		}
 	}
     
-	void put(size_t pos, const uint8 * src, size_t cnt)
+	INLINE void put(size_t pos, const uint8 * src, size_t cnt) NOEXCEPT
 	{
         bbuff_put(m_pBuff, pos, src, cnt);
 	}
     
-	void hexlike()
+	void hexlike() NOEXCEPT
 	{
 		size_t j = 1, k = 1;
 		printf("STORAGE_SIZE: %u\n", (unsigned int)size());
@@ -429,7 +431,7 @@ public:
 		printf("\n");
 	}
     
-	void reverse()
+	INLINE void reverse() NOEXCEPT
 	{
 		std::reverse(m_pBuff->storage, m_pBuff->storage + m_pBuff->size);
 	}
