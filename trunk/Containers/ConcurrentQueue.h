@@ -46,19 +46,21 @@ public:
             }
             else
             {
-//                time_t endtime = UNIXTIME + timeout;
-//                while(queue.empty())
-//                {
-//                    time_t remaining = endtime - UNIXTIME;
-//                    if(remaining <= 0)
-//                        return false;
-//                    
-//                    not_full.wait_for(rLock, std::chrono::seconds(remaining));
-//                }
-                
+#if 0
+                time_t endtime = UNIXTIME + timeout;
+                while(queue.empty())
+                {
+                    time_t remaining = endtime - UNIXTIME;
+                    if(remaining <= 0)
+                        return false;
+                    
+                    not_full.wait_for(rLock, std::chrono::seconds(remaining));
+                }
+#else
                 bool status = m_rNotFullCond.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
                 if(status == false)
                     return false;
+#endif
             }
         }
         
@@ -88,19 +90,21 @@ public:
         }
         else
         {
-//            time_t endtime = UNIXTIME + timeout;
-//            while(queue.empty())
-//            {
-//                time_t remaining = endtime - UNIXTIME;
-//                if(remaining <= 0)
-//                    return false;
-//                
-//                not_empty.wait_for(rLock, std::chrono::seconds(remaining));
-//            }
-            
+#if 0
+            time_t endtime = UNIXTIME + timeout;
+            while(queue.empty())
+            {
+                time_t remaining = endtime - UNIXTIME;
+                if(remaining <= 0)
+                    return false;
+                
+                not_empty.wait_for(rLock, std::chrono::seconds(remaining));
+            }
+#else
             bool status = m_rNotEmptyCond.wait_for(rLock, std::chrono::seconds(timeout), [this](){ return !queue.empty(); } );
             if(status == false)
                 return false;
+#endif
         }
         
         item = queue.front();
