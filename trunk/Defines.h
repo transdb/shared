@@ -21,7 +21,7 @@
 #define DEFINES_H
 
 //platform definitions
-#ifdef __APPLE_CC__
+#ifdef __APPLE__
     #define MAC
 #endif
 
@@ -80,6 +80,11 @@
     #include <arpa/inet.h>
     #include <sys/ioctl.h>
     #include <sys/resource.h>
+
+    #ifdef __linux__
+        #include <linux/types.h>
+        #include <linux/limits.h>
+    #endif
 #endif
 
 //C++ stuff
@@ -144,9 +149,6 @@
     typedef int         HANDLE;
 
     //imports
-    #ifndef PATH_MAX
-        #define PATH_MAX 4096
-    #endif
     #define MAX_PATH 				PATH_MAX
     #define INVALID_HANDLE_VALUE    -1
 
