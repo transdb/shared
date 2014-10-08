@@ -23,32 +23,36 @@
 
 /* Implementation Selection */
 #include "../Defines.h"
-#if defined(WIN32) && !defined(WP8)
-    #define CONFIG_USE_IOCP
-#elif WP8
-    #define CONFIG_USE_WP8
-#else
-    #ifdef MAC
-        //MAC sockets
-        #define SOCKET 			int
-        #define SD_BOTH 		SHUT_RDWR
-        #define TCP_NODELAY 	0x6
 
-        #include <sys/event.h>
-        #define CONFIG_USE_KQUEUE
-    #else
-        // unix defines
-        #define SOCKET 			int
-        #define SD_BOTH 		SHUT_RDWR
-        #define TCP_NODELAY 	0x6
-	
-        #include <sys/epoll.h>
-        #define CONFIG_USE_EPOLL
-    #endif
+//improt defined from windows
+#ifndef WIN32
+    #define SOCKET 			int
+    #define SD_BOTH 		SHUT_RDWR
+    #define TCP_NODELAY 	0x6
 #endif
 
-#define SOCKET_SEND_RECV_TIMEOUT 15
-#define MAX_EVENTS 32
+//platform defines
+#if defined(CONFIG_USE_IOCP)
+    //windows IOCP socket
+#elif defined(CONFIG_USE_SELECT)
+    //select socket
+#elif defined(CONFIG_USE_KQUEUE)
+    //kevent sockets
+    #include <sys/event.h>
+#elif defined(CONFIG_USE_EPOLL)
+    //epoll scokets
+    #include <sys/epoll.h>
+#else
+    #error "Please define CONFIG_USE_IOCP for Windows, CONFIG_USE_WP8 for Windows Phone 8, CONFIG_USE_KQUEUE for OSX and iOS, CONFIG_USE_EPOLL for linux"
+#endif
+
+//
+#ifndef SOCKET_SEND_RECV_TIMEOUT
+    #define SOCKET_SEND_RECV_TIMEOUT 15
+#endif
+#ifndef MAX_EVENTS
+    #define MAX_EVENTS 32
+#endif
 
 /* IOCP Defines */
 

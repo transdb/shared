@@ -20,14 +20,16 @@
 
 #include "Network.h"
 
-#ifdef CONFIG_USE_WP8
+#ifdef CONFIG_USE_SELECT
 
 initialiseSingleton(SocketMgr);
 
 SocketMgr::SocketMgr()
 {
+#ifdef WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2,2), &wsaData);
+#endif
 
 	FD_ZERO(&m_readableSet);
 	FD_ZERO(&m_writableSet);
@@ -35,7 +37,9 @@ SocketMgr::SocketMgr()
 
 SocketMgr::~SocketMgr()
 {
+#ifdef WIN32
 	WSACleanup();
+#endif
 }
 
 void SocketMgr::SpawnWorkerThreads()
@@ -79,8 +83,8 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 	timeval rTimeout;
 	rTimeout.tv_sec = 0;
 	rTimeout.tv_usec = 0;
-	FD_SET readable;
-	FD_SET writable;
+	fd_set readable;
+	fd_set writable;
 	BaseSocket *pSocket;
 	SocketSet::iterator itr, itr2;
 
@@ -107,7 +111,11 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 		fd_count = select(FD_SETSIZE, &readable, &writable, NULL, &rTimeout);
 		if (fd_count < 0)
 		{
+#ifdef WIN32
 			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, WSAGetLastError());
+#else
+   			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, errno);
+#endif
 		}
 		else if (fd_count > 0)
 		{

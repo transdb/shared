@@ -20,7 +20,7 @@
 #ifndef SOCKETMGR_H_WIN32
 #define SOCKETMGR_H_WIN32
 
-#ifdef CONFIG_USE_WP8
+#ifdef CONFIG_USE_SELECT
 
 class Socket;
 
@@ -54,8 +54,8 @@ public:
 	void thread_func(ThreadContext *pContext);
 
 private:
-	FD_SET					m_writableSet;
-	FD_SET					m_readableSet;
+	fd_set					m_writableSet;
+	fd_set					m_readableSet;
 
 	SocketSet				m_sockets;
 	std::recursive_mutex	m_socketLock;
