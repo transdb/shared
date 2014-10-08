@@ -24,10 +24,14 @@
 /* Implementation Selection */
 #include "../Defines.h"
 
-//improt defined from windows
-#ifndef WIN32
+//import defined from windows
+#ifndef SOCKET
     #define SOCKET 			int
+#endif
+#ifndef SD_BOTH
     #define SD_BOTH 		SHUT_RDWR
+#endif
+#ifndef TCP_NODELAY
     #define TCP_NODELAY 	0x6
 #endif
 
