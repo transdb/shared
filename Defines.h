@@ -63,6 +63,9 @@
     #ifndef NOMINMAX
         #define NOMINMAX
     #endif
+	#ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+		#define _WINSOCK_DEPRECATED_NO_WARNINGS
+	#endif
 
 	#include <malloc.h>
 	#include <time.h>
@@ -94,6 +97,7 @@
     #include <list>
     #include <map>
     #include <queue>
+	#include <fstream>
     #include <sstream>
     #include <algorithm>
 #endif

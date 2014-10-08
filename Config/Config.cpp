@@ -17,7 +17,6 @@
  *
  */
 
-#include <fstream>
 #include "Config.h"
 #include "../Logs/Log.h"
 
@@ -29,10 +28,8 @@ ConfigFile::ConfigFile()
 {
 }
 
-
 ConfigFile::~ConfigFile()
-{
-	
+{	
 }
 
 static void remove_spaces(std::string& str)

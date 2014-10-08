@@ -89,11 +89,11 @@ void ScreenLog::Notice(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Notice(source, format, ap);
+	NoticeVA(source, format, ap);
     va_end(ap);
 }
 
-void ScreenLog::Notice(const char * source, const char * format, va_list ap)
+void ScreenLog::NoticeVA(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 0)
         return;
@@ -154,11 +154,11 @@ void ScreenLog::Warning(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Warning(source, format, ap);
+	WarningVA(source, format, ap);
     va_end(ap);
 }
 
-void ScreenLog::Warning(const char * source, const char * format, va_list ap)
+void ScreenLog::WarningVA(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 2)
         return;
@@ -220,11 +220,11 @@ void ScreenLog::Success(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Success(source, format, ap);
+	SuccessVA(source, format, ap);
     va_end(ap);
 }
 
-void ScreenLog::Success(const char * source, const char * format, va_list ap)
+void ScreenLog::SuccessVA(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 2)
         return;
@@ -286,11 +286,11 @@ void ScreenLog::Error(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Error(source, format, ap);
+	ErrorVA(source, format, ap);
     va_end(ap);
 }
 
-void ScreenLog::Error(const char * source, const char * format, va_list ap)
+void ScreenLog::ErrorVA(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 1)
         return;
@@ -352,11 +352,11 @@ void ScreenLog::Debug(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Debug(source, format, ap);
+	DebugVA(source, format, ap);
     va_end(ap);
 }
 
-void ScreenLog::Debug(const char * source, const char * format, va_list ap)
+void ScreenLog::DebugVA(const char * source, const char * format, va_list ap)
 {
     if(m_log_level < 3)
         return;
@@ -486,7 +486,7 @@ void Log_Notice(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Log.Notice(source, format, ap);
+    Log.NoticeVA(source, format, ap);
     va_end(ap);
 }
 
@@ -494,7 +494,7 @@ void Log_Warning(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Log.Warning(source, format, ap);
+    Log.WarningVA(source, format, ap);
     va_end(ap);
 }
 
@@ -502,7 +502,7 @@ void Log_Success(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Log.Success(source, format, ap);
+    Log.SuccessVA(source, format, ap);
     va_end(ap);
 }
 
@@ -510,7 +510,7 @@ void Log_Error(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Log.Error(source, format, ap);
+    Log.ErrorVA(source, format, ap);
     va_end(ap);
 }
 
@@ -518,7 +518,7 @@ void Log_Debug(const char * source, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    Log.Debug(source, format, ap);
+    Log.DebugVA(source, format, ap);
     va_end(ap);
 }
 

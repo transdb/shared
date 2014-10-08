@@ -23,6 +23,7 @@
 #include "../clib/Buffers/CByteBuffer.h"
 #include "../IO/IO.h"
 #include "../Singleton.h"
+#include "../clib/Log/CLog.h"
 
 #ifdef WIN32
 	#define TRED FOREGROUND_RED | FOREGROUND_INTENSITY
@@ -69,24 +70,21 @@ public:
 
 class ScreenLog : public Singleton<ScreenLog>
 {
+	friend void Log_Notice(const char * source, const char * format, ...);
+	friend void Log_Warning(const char * source, const char * format, ...);
+	friend void Log_Success(const char * source, const char * format, ...);
+	friend void Log_Error(const char * source, const char * format, ...);
+	friend void Log_Debug(const char * source, const char * format, ...);
+
 public:
 	explicit ScreenLog();
     ~ScreenLog();
 
 	void Notice(const char * source, const char * format, ...);
-	void Notice(const char * source, const char * format, va_list ap);
-    
 	void Warning(const char * source, const char * format, ...);
-    void Warning(const char * source, const char * format, va_list ap);
-    
 	void Success(const char * source, const char * format, ...);
-    void Success(const char * source, const char * format, va_list ap);
-    
 	void Error(const char * source, const char * format, ...);
-    void Error(const char * source, const char * format, va_list ap);
-    
 	void Debug(const char * source, const char * format, ...);
-    void Debug(const char * source, const char * format, va_list ap);
     
     void CreateFileLog(const std::string &sFilePath);
     
@@ -106,6 +104,12 @@ public:
     
 private:
     DISALLOW_COPY_AND_ASSIGN(ScreenLog);
+	//
+	void NoticeVA(const char * source, const char * format, va_list ap);
+	void WarningVA(const char * source, const char * format, va_list ap);
+	void SuccessVA(const char * source, const char * format, va_list ap);
+	void ErrorVA(const char * source, const char * format, va_list ap);
+	void DebugVA(const char * source, const char * format, va_list ap);
     
 	void Color(unsigned int color);
 	void Time();
