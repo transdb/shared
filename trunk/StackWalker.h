@@ -24,8 +24,8 @@ typedef unsigned long SIZE_T, *PSIZE_T;
 #endif
 #endif  // _MSC_VER <1300
 
-class __declspec(dllexport) StackWalkerInternal;  // forward
-class __declspec(dllexport) StackWalker
+class StackWalkerInternal;  // forward
+class StackWalker
 {
 public:
   typedef enum StackWalkOptions
