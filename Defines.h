@@ -71,6 +71,7 @@
     #include <ws2tcpip.h>
     #include <process.h>
 #else
+    #include <alloca.h>
     #include <ctype.h>
     #include <unistd.h>
     #include <netdb.h>
