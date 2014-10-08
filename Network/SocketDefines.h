@@ -25,7 +25,7 @@
 #include "../Defines.h"
 
 //import defined from windows
-#ifndef SOCKET
+#if !defined(WIN32) && !defined(SOCKET)
     #define SOCKET 			int
 #endif
 #ifndef SD_BOTH
@@ -47,7 +47,7 @@
     //epoll scokets
     #include <sys/epoll.h>
 #else
-    #error "Please define CONFIG_USE_IOCP for Windows, CONFIG_USE_WP8 for Windows Phone 8, CONFIG_USE_KQUEUE for OSX and iOS, CONFIG_USE_EPOLL for linux"
+    #error "Please define CONFIG_USE_IOCP for Windows, CONFIG_USE_SELECT for select, CONFIG_USE_KQUEUE kevent, CONFIG_USE_EPOLL for epoll"
 #endif
 
 //
