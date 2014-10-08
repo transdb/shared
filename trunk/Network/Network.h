@@ -28,15 +28,15 @@
 
 #ifdef CONFIG_USE_IOCP
 	#include "BaseSocket.h"
-	#include "SocketWindows.h"
-	#include "SocketMgrWin32.h"
+	#include "SocketIOCP.h"
+	#include "SocketMgrIOCP.h"
 	#include "ListenSocketWin32.h"
 #endif
 
 #ifdef CONFIG_USE_SELECT
     #include "BaseSocket.h"
-    #include "SocketWindowsPhone.h"
-    #include "SocketMgrWinPhone.h"
+    #include "SocketSELECT.h"
+    #include "SocketMgrSELECT.h"
     #ifdef WIN32
         #include "ListenSocketWin32.h"
     #else
@@ -46,15 +46,15 @@
 
 #ifdef CONFIG_USE_EPOLL
 	#include "BaseSocket.h"
-	#include "SocketLinux.h"
-	#include "SocketMgrLinux.h"
+	#include "SocketEPOLL.h"
+	#include "SocketMgrEPOLL.h"
 	#include "ListenSocketLinux.h"
 #endif
 
 #ifdef CONFIG_USE_KQUEUE
     #include "BaseSocket.h"
-    #include "SocketMac.h"
-    #include "SocketMgrMac.h"
+    #include "SocketKEVENT.h"
+    #include "SocketMgrKEVENT.h"
     #include "ListenSocketLinux.h"
 #endif
 
