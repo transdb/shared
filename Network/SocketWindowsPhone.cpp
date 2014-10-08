@@ -19,7 +19,7 @@
 
 #include "Network.h"
 
-#ifdef CONFIG_USE_WP8
+#ifdef CONFIG_USE_SELECT
 
 Socket::Socket(SOCKET fd, size_t readbuffersize, size_t writebuffersize) : m_readBuffer(readbuffersize), m_writeBuffer(writebuffersize)
 {
@@ -56,12 +56,21 @@ bool BaseSocket::Connect(SOCKET fd, const sockaddr_in *peer, uint32 timeout)
 
 	//try to connect
 	int result = connect(fd, (const sockaddr*)peer, sizeof(sockaddr_in));
+#ifdef WIN32
 	if (result == 0 || WSAGetLastError() != WSAEWOULDBLOCK)
 	{
 		Log.Error(__FUNCTION__, "result == %d, errno = %d", result, WSAGetLastError());
 		std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
 		return false;
 	}
+#else
+    if(result == 0 || errno != EINPROGRESS)
+    {
+        Log.Error(__FUNCTION__, "result == %d, errno = %d", result, errno);
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout * 1000));
+        return false;
+    }
+#endif
 
 	//async socket connect
 	int count;
@@ -74,7 +83,7 @@ bool BaseSocket::Connect(SOCKET fd, const sockaddr_in *peer, uint32 timeout)
 	tv.tv_sec = timeout;
 	tv.tv_usec = 0;
 
-	count = select(FD_SETSIZE, NULL, &fdset, NULL, &tv);
+    count = select(fd + 1, NULL, &fdset, NULL, &tv);
 	if (count == 1)
 	{
 		int so_error;
@@ -119,7 +128,7 @@ void Socket::ReadCallback(size_t len)
 {
 	/* Any other platform, we have to call recv() to actually get the data. */
 	size_t space = m_readBuffer.GetSpace();
-	int bytes = recv(m_fd, (char*)m_readBuffer.GetBuffer(), space, 0);
+	ssize_t bytes = recv(m_fd, (char*)m_readBuffer.GetBuffer(), space, 0);
 	if (bytes <= 0)
 	{
 		Disconnect();
@@ -135,7 +144,7 @@ void Socket::ReadCallback(size_t len)
 void Socket::WriteCallback(size_t len)
 {
 	// We should already be locked at this point, so try to push everything out.
-	int bytes = send(m_fd, (char*)m_writeBuffer.GetBufferStart(), m_writeBuffer.GetContiguiousBytes(), 0);
+	ssize_t bytes = send(m_fd, (char*)m_writeBuffer.GetBufferStart(), m_writeBuffer.GetContiguiousBytes(), 0);
 	if (bytes < 0)
 	{
 		Disconnect();
