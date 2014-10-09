@@ -21,6 +21,11 @@
 
 #ifdef CONFIG_USE_SELECT
 
+//for send and recv
+#ifdef WIN32
+	typedef int ssize_t;
+#endif
+
 Socket::Socket(SOCKET fd, size_t readbuffersize, size_t writebuffersize) : m_readBuffer(readbuffersize), m_writeBuffer(writebuffersize)
 {
 	//set fd

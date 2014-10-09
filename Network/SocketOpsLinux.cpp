@@ -19,7 +19,7 @@
 
 #include "Network.h"
 
-#if !defined(CONFIG_USE_IOCP) && !defined(CONFIG_USE_WP8)
+#if !defined(WIN32)
 
 namespace SocketOps
 {
