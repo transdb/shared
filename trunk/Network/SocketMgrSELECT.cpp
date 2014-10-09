@@ -19,7 +19,7 @@
 
 
 #include "Network.h"
-#include "socketpair.h"
+#include "../clib/Network/socketpair.h"
 
 #ifdef CONFIG_USE_SELECT
 
