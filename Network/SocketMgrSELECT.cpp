@@ -30,7 +30,7 @@ initialiseSingleton(SocketMgr);
 INLINE static void SignalSelect(SOCKET fd)
 {
     uint8 flag = 0;
-    if(send(fd, &flag, sizeof(flag), 0) < 0)
+    if(send(fd, (const char*)&flag, sizeof(flag), 0) < 0)
     {
         Log.Error(__FUNCTION__, "Client signal socket broken.");
     }
@@ -147,7 +147,7 @@ void SocketMgr::thread_run(ThreadContext *pContext)
             if(FD_ISSET(m_socketPair[esstServer], &readable))
             {
                 uint8 flag;
-                if(recv(m_socketPair[esstServer], &flag, sizeof(flag), 0) <= 0)
+                if(recv(m_socketPair[esstServer], (char*)&flag, sizeof(flag), 0) <= 0)
                 {
                     Log.Error(__FUNCTION__, "Server signal socket broken");
                 }

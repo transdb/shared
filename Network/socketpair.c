@@ -48,17 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *   add argument make_overlapped
  */
 
-#include <string.h>
-
-#ifdef WIN32
-# include <ws2tcpip.h>  /* socklen_t, et al (MSVC20xx) */
-# include <windows.h>
-# include <io.h>
-#else
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <errno.h>
-#endif
+#include "../Defines.h"
 
 #ifdef WIN32
 
