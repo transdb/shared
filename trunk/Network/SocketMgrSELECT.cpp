@@ -19,10 +19,22 @@
 
 
 #include "Network.h"
+#include "socketpair.h"
 
 #ifdef CONFIG_USE_SELECT
 
 initialiseSingleton(SocketMgr);
+
+/** Unblocks select from wait
+ */
+INLINE static void SignalSelect(SOCKET fd)
+{
+    uint8 flag = 0;
+    if(send(fd, &flag, sizeof(flag), 0) < 0)
+    {
+        Log.Error(__FUNCTION__, "Client signal socket broken.");
+    }
+}
 
 SocketMgr::SocketMgr()
 {
@@ -33,10 +45,24 @@ SocketMgr::SocketMgr()
 
 	FD_ZERO(&m_readableSet);
 	FD_ZERO(&m_writableSet);
+    
+    //create connected socket pair
+    if(dumb_socketpair(m_socketPair, 0) != 0)
+    {
+        Log.Error(__FUNCTION__, "Cannot create socket pair.");
+        exit(EXIT_FAILURE);
+    }
+    
+    //add server socket to readable set
+    FD_SET(m_socketPair[esstServer], &m_readableSet);
 }
 
 SocketMgr::~SocketMgr()
 {
+    //close signal sockets
+    SocketOps::CloseSocket(m_socketPair[esstServer]);
+    SocketOps::CloseSocket(m_socketPair[esstClient]);
+    
 #ifdef WIN32
 	WSACleanup();
 #endif
@@ -47,7 +73,7 @@ void SocketMgr::SpawnWorkerThreads()
 	ThreadPool.ExecuteTask(new SocketWorkerThread());
 }
 
-void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
+void SocketMgr::AddSocket(BaseSocket* pSocket, bool listenSocket)
 {
 	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	if (m_sockets.find(pSocket) == m_sockets.end())
@@ -57,6 +83,9 @@ void SocketMgr::AddSocket(BaseSocket * pSocket, bool listenSocket)
 		else
 			FD_SET(pSocket->GetFd(), &m_readableSet);
 		m_sockets.insert(pSocket);
+        
+        //signal
+        SignalSelect(m_socketPair[esstClient]);
 	}
 }
 
@@ -65,39 +94,34 @@ void SocketMgr::RemoveSocket(BaseSocket * pSocket)
 	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	if (m_sockets.find(pSocket) != m_sockets.end())
 	{
+        //remove from read and write send
 		FD_CLR(pSocket->GetFd(), &m_readableSet);
 		FD_CLR(pSocket->GetFd(), &m_writableSet);
 		m_sockets.erase(pSocket);
+        
+        //signal
+        SignalSelect(m_socketPair[esstClient]);
 	}
 }
 
 void SocketMgr::WantWrite(BaseSocket * pSocket)
 {
-	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
+    //we are allready locked
 	FD_SET(pSocket->GetFd(), &m_writableSet);
+    
+    //signal
+    SignalSelect(m_socketPair[esstClient]);
 }
 
-void SocketMgr::thread_func(ThreadContext *pContext)
+void SocketMgr::thread_run(ThreadContext *pContext)
 {
-	int fd_count;
-	timeval rTimeout;
-	rTimeout.tv_sec = 0;
-	rTimeout.tv_usec = 0;
 	fd_set readable;
 	fd_set writable;
-	BaseSocket *pSocket;
-	SocketSet::iterator itr, itr2;
+    BaseSocket* pSocket;
+    SocketSet::iterator itr, itr2;
 
-	for (;;)
+	while(pContext->GetThreadRunning())
 	{
-		m_socketLock.lock();
-		if (m_sockets.empty())
-		{
-			m_socketLock.unlock();
-			pContext->Wait(50);
-			continue;
-		}
-
 		/* copy the sets */
 		memcpy(&readable, &m_readableSet, sizeof(m_readableSet));
 		memcpy(&writable, &m_writableSet, sizeof(m_writableSet));
@@ -106,10 +130,10 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 			will work like EV_ONESHOT 
 		*/
 		FD_ZERO(&m_writableSet);
-
+        
 		//poll sockets status
-		fd_count = select(FD_SETSIZE, &readable, &writable, NULL, &rTimeout);
-		if (fd_count < 0)
+		int fd_count = select(FD_SETSIZE, &readable, &writable, NULL, NULL);
+		if(fd_count < 0)
 		{
 #ifdef WIN32
 			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, WSAGetLastError());
@@ -117,9 +141,23 @@ void SocketMgr::thread_func(ThreadContext *pContext)
    			Log.Error(__FUNCTION__, "select fd_count: %d errno: %d", fd_count, errno);
 #endif
 		}
-		else if (fd_count > 0)
+		else if(fd_count > 0)
 		{
-			for (itr = m_sockets.begin(); itr != m_sockets.end();)
+            //check signal socket
+            if(FD_ISSET(m_socketPair[esstServer], &readable))
+            {
+                uint8 flag;
+                if(recv(m_socketPair[esstServer], &flag, sizeof(flag), 0) <= 0)
+                {
+                    Log.Error(__FUNCTION__, "Server signal socket broken");
+                }
+            }
+            
+            //lock socket set
+            std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
+            
+            //check changes on sockets
+			for(itr = m_sockets.begin(); itr != m_sockets.end();)
 			{
 				itr2 = itr;
 				++itr;
@@ -127,7 +165,7 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 
 				// If the ReadSet is marked for this socket then this means data
 				// is available to be read on the socket
-				if (FD_ISSET(pSocket->GetFd(), &readable))
+				if(FD_ISSET(pSocket->GetFd(), &readable))
 				{
 					if (pSocket->IsConnected())
 					{
@@ -137,13 +175,13 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 
 				// If the WriteSet is marked on this socket then this means the internal
 				// data buffers are available for more data
-				if (FD_ISSET(pSocket->GetFd(), &writable))
+				if(FD_ISSET(pSocket->GetFd(), &writable))
 				{
-					if (pSocket->IsConnected())
+					if(pSocket->IsConnected())
 					{
 						pSocket->BurstBegin();                      // Lock receive mutex
 						pSocket->WriteCallback(0);                  // Perform actual send()
-						if (pSocket->Writable())
+						if(pSocket->Writable())
 						{
 							pSocket->PostEvent(EVFILT_WRITE);		// Still remaining data.
 						}
@@ -156,19 +194,26 @@ void SocketMgr::thread_func(ThreadContext *pContext)
 				}
 			}
 		}
-		//unlock socket set
-		m_socketLock.unlock();
-
-		//wait
-		pContext->Wait(100);
 	}
+}
+
+void SocketMgr::thread_OnShutdown(ThreadContext *pContext)
+{
+    //signal and wake up thread for shutdown
+    SignalSelect(m_socketPair[esstClient]);
 }
 
 bool SocketWorkerThread::run()
 {
 	CommonFunctions::SetThreadName("SocketWorker thread");
-	sSocketMgr.thread_func(this);
+	sSocketMgr.thread_run(this);
 	return true;
+}
+
+void SocketWorkerThread::OnShutdown()
+{
+    ThreadContext::OnShutdown();
+    sSocketMgr.thread_OnShutdown(this);
 }
 
 void SocketMgr::CloseAll()

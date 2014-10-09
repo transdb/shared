@@ -77,7 +77,6 @@ static T* ConnectTCPSocket(const char * hostname, u_short port, uint32 timeout =
     sockaddr_in peer;
 	peer.sin_family = ci->h_addrtype;
 	peer.sin_port = ntohs(port);
-    peer.sin_family = AF_INET;
 	memcpy(&peer.sin_addr.s_addr, ci->h_addr_list[0], ci->h_length);
     
     //create socket fd

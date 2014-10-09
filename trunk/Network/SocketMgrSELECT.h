@@ -29,6 +29,13 @@ typedef std::set<BaseSocket*> SocketSet;
 #define EVFILT_WRITE	0
 #define EVFILT_READ		1
 
+typedef enum E_SIGNAL_SOCKET_TYPE
+{
+    esstClient  = 0,
+    esstServer  = 1,
+    esstNum
+} E_SST;
+
 class SocketMgr : public Singleton<SocketMgr>
 {
 public:
@@ -51,13 +58,20 @@ public:
 	void WantWrite(BaseSocket * pSocket);
 
 	/// Thread proc
-	void thread_func(ThreadContext *pContext);
+	void thread_run(ThreadContext *pContext);
+    
+    /// Before thread shudown
+	void thread_OnShutdown(ThreadContext *pContext);
 
 private:
 	fd_set					m_writableSet;
 	fd_set					m_readableSet;
-
-	SocketSet				m_sockets;
+    
+    //for signaling
+    SOCKET                  m_socketPair[esstNum];
+    
+    //holding sockets ptrs
+	SocketSet               m_sockets;
 	std::recursive_mutex	m_socketLock;
 };
 
@@ -66,7 +80,9 @@ private:
 class SocketWorkerThread : public ThreadContext
 {
 public:
+    //ThreadContext
 	bool run();
+    void OnShutdown();
 };
 
 #endif
