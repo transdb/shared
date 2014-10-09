@@ -19,7 +19,7 @@
 
 #include "Network.h"
 
-#ifdef CONFIG_USE_IOCP
+#ifdef WIN32
 
 namespace SocketOps
 {
@@ -92,6 +92,13 @@ namespace SocketOps
 	{
 		uint32 option = 1;
 		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&option, sizeof(uint32));
+	}
+
+	// Socket keepalive
+	void KeepAlive(SOCKET fd)
+	{
+		uint32 option = 1;
+		setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&option, sizeof(option));
 	}
 }
 
