@@ -155,11 +155,11 @@ private:
     INLINE void* _alloc_sys(size_t size)
     {
         ++m_allocationsFromSys;
-        void* result = ::malloc(size);
+        void* result = _MALLOC(size);
         if(!result)
         {
             recycle();
-            result = ::malloc(size);
+            result = _MALLOC(size);
             Log.Warning(__FUNCTION__, "Memory pool forced recycle.");
         }
         return result;
@@ -168,7 +168,7 @@ private:
     INLINE void _dealloc_sys(void *ptr)
     {
         --m_allocationsFromSys;
-        ::free(ptr);
+        _FREE(ptr);
     }
     
     INLINE size_t align(size_t size)

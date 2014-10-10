@@ -10,17 +10,6 @@
 
 #include "../../Defines.h"
 
-#ifdef INTEL_SCALABLE_ALLOCATOR
-    #include "tbb/scalable_allocator.h"
-    #define _CALLOC(num,size)   scalable_calloc(num, size)
-    #define _REALLOC(ptr,size)  scalable_realloc(ptr, size)
-    #define _FREE(ptr)          scalable_free(ptr)
-#else
-    #define _CALLOC(num,size)   calloc(num, size)
-    #define _REALLOC(ptr,size)  realloc(ptr, size)
-    #define _FREE(ptr)          free(ptr)
-#endif
-    
 typedef struct CByteBuffer
 {
     uint8*  storage;

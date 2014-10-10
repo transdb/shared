@@ -1,6 +1,5 @@
 //
 //  ReferenceCounter.h
-//  PLTMobile
 //
 //  Created by Miroslav Kudrnac on 22.11.13.
 //

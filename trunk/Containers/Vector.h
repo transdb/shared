@@ -1,6 +1,5 @@
 //
 //  Vector.h
-//  TransDB
 //
 //  Created by Miroslav Kudrnac on 20.01.14.
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
@@ -87,10 +86,10 @@ public:
             //set capacity
             m_capacity = newCapacity;
             // resize buffer
-            void *pNewBuff = realloc(m_pBuff, sizeof(T) * m_capacity);
+            void *pNewBuff = _REALLOC(m_pBuff, sizeof(T) * m_capacity);
             if(pNewBuff == NULL)
             {
-                free((void*)m_pBuff);
+                _FREE((void*)m_pBuff);
                 throw std::bad_alloc();
             }
             m_pBuff = (T*)pNewBuff;
@@ -107,7 +106,7 @@ public:
     {
         if(m_pBuff)
         {
-            free(m_pBuff);
+            _FREE(m_pBuff);
             m_pBuff = NULL;
         }
         m_size      = 0;
@@ -175,7 +174,7 @@ public:
 		if(this != &v)
 		{
             //clear
-            free(m_pBuff);
+            _FREE(m_pBuff);
             
 			//copy
             m_pBuff = NULL;
@@ -201,7 +200,7 @@ public:
 		if(this != &v)
 		{
             //clear
-            free(m_pBuff);
+            _FREE(m_pBuff);
             
             //set new data
             m_pBuff = v.m_pBuff;
