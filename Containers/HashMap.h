@@ -15,7 +15,6 @@ class HashNode
 public:
     explicit HashNode(const K &key, const V &value) NOEXCEPT : m_key(key), m_value(std::move(value)), m_pNext(NULL)
     {
-        
     }
     
     INLINE K getKey() const NOEXCEPT                { return m_key; }
@@ -39,13 +38,19 @@ template <class K, class V>
 class HashMapNodeAllocator
 {
 public:
-    INLINE HashNode<K, V> *allocate(const K &key, const V &value)
-    {        
-        return new HashNode<K, V>(key, value);
+    explicit HashMapNodeAllocator() NOEXCEPT
+    {
     }
     
-    INLINE void deallocate(HashNode<K, V> *p)
+    INLINE HashNode<K, V> *allocate(const K &key, const V &value) NOEXCEPT
     {
+        void* pMem = _MALLOC(sizeof(HashNode<K, V>));
+        return new(pMem) HashNode<K, V>(key, value);
+    }
+    
+    INLINE void deallocate(HashNode<K, V> *p) NOEXCEPT
+    {
+        p->~HashNode<K, V>();
         _FREE(p);
     }
     
@@ -86,7 +91,7 @@ public:
         return m_tableSizeMask;
     }
     
-    INLINE void clear()
+    INLINE void clear() NOEXCEPT
     {
         HashNodeT *pEntry;
         Vector<HashNodeT*, uint64> rNodes;
