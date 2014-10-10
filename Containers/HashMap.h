@@ -1,6 +1,5 @@
 //
 //  HashMap.h
-//  TransDB
 //
 //  Created by Miroslav Kudrnac on 16.01.14.
 //  Copyright (c) 2014 Miroslav Kudrnac. All rights reserved.
@@ -26,6 +25,8 @@ public:
     INLINE void setNext(HashNode *pNext) NOEXCEPT   { m_pNext = pNext; }
     
 private:
+    DISALLOW_COPY_AND_ASSIGN(HashNode);
+    
     //key-value pair
     K           m_key;
     V           m_value;
@@ -38,15 +39,18 @@ template <class K, class V>
 class HashMapNodeAllocator
 {
 public:
-    HashNode<K, V> *allocate(const K &key, const V &value)
-    {
+    INLINE HashNode<K, V> *allocate(const K &key, const V &value)
+    {        
         return new HashNode<K, V>(key, value);
     }
     
-    void deallocate(HashNode<K, V> *p)
+    INLINE void deallocate(HashNode<K, V> *p)
     {
-        delete p;
+        _FREE(p);
     }
+    
+private:
+    DISALLOW_COPY_AND_ASSIGN(HashMapNodeAllocator);
 };
 
 // Hash map class template

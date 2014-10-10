@@ -189,6 +189,19 @@
 extern time_t       UNIXTIME;
 extern struct tm    g_localTime;
 
+#ifdef INTEL_SCALABLE_ALLOCATOR
+    #include "tbb/scalable_allocator.h"
+    #define _MALLOC(size)       scalable_malloc(size)
+    #define _CALLOC(num,size)   scalable_calloc(num, size)
+    #define _REALLOC(ptr,size)  scalable_realloc(ptr, size)
+    #define _FREE(ptr)          scalable_free(ptr)
+#else
+    #define _MALLOC(size)       malloc(size)
+    #define _CALLOC(num,size)   calloc(num, size)
+    #define _REALLOC(ptr,size)  realloc(ptr, size)
+    #define _FREE(ptr)          free(ptr)
+#endif
+
 #ifdef WIN32
     #define NOINLINE __declspec(noinline)
 #else
