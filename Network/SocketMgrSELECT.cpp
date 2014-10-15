@@ -78,12 +78,12 @@ void SocketMgr::AddSocket(BaseSocket* pSocket, bool listenSocket)
 	std::lock_guard<std::recursive_mutex> rGuard(m_socketLock);
 	if (m_sockets.find(pSocket) == m_sockets.end())
 	{
-		if (pSocket->Writable())
+		if(pSocket->Writable())
 			FD_SET(pSocket->GetFd(), &m_writableSet);
 		else
 			FD_SET(pSocket->GetFd(), &m_readableSet);
 		m_sockets.insert(pSocket);
-        
+
         //signal
         SignalSelect(m_socketPair[esstClient]);
 	}
@@ -117,6 +117,7 @@ void SocketMgr::thread_run(ThreadContext *pContext)
 {
 	fd_set readable;
 	fd_set writable;
+    fd_set except;
     BaseSocket* pSocket;
     SocketSet::iterator itr, itr2;
 
@@ -125,14 +126,13 @@ void SocketMgr::thread_run(ThreadContext *pContext)
 		/* copy the sets */
 		memcpy(&readable, &m_readableSet, sizeof(m_readableSet));
 		memcpy(&writable, &m_writableSet, sizeof(m_writableSet));
-
-		/** clear the writable set for the next loop 
-			will work like EV_ONESHOT 
-		*/
-		FD_ZERO(&m_writableSet);
+        
+        /** clear the exception set for the next loop
+         */
+        FD_ZERO(&except);
         
 		//poll sockets status
-		int fd_count = select(FD_SETSIZE, &readable, &writable, NULL, NULL);
+		int fd_count = select(FD_SETSIZE, &readable, &writable, &except, NULL);
 		if(fd_count < 0)
 		{
 #ifdef WIN32
@@ -172,7 +172,7 @@ void SocketMgr::thread_run(ThreadContext *pContext)
 						pSocket->ReadCallback(0);
 					}
 				}
-
+                
 				// If the WriteSet is marked on this socket then this means the internal
 				// data buffers are available for more data
 				if(FD_ISSET(pSocket->GetFd(), &writable))
@@ -181,17 +181,30 @@ void SocketMgr::thread_run(ThreadContext *pContext)
 					{
 						pSocket->BurstBegin();                      // Lock receive mutex
 						pSocket->WriteCallback(0);                  // Perform actual send()
-						if(pSocket->Writable())
-						{
-							pSocket->PostEvent(EVFILT_WRITE);		// Still remaining data.
-						}
-						else
-						{
-							pSocket->DecSendLock();
-						}
+                        if(pSocket->IsConnected())
+                        {
+                            if(pSocket->Writable())
+                            {
+                                pSocket->PostEvent(EVFILT_WRITE);   // Still remaining data.
+                            }
+                            else
+                            {
+                                pSocket->DecSendLock();
+                            }
+                        }
 						pSocket->BurstEnd();						// Unlock
 					}
 				}
+                
+                //Exception set -> socket error disconnect and make cleanup
+                if(FD_ISSET(pSocket->GetFd(), &except))
+                {
+#ifdef WIN32
+                    pSocket->OnError(WSAGetLastError());
+#else
+                    pSocket->OnError(errno);
+#endif
+                }
 			}
 		}
 	}
