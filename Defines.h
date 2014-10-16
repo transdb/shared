@@ -189,17 +189,30 @@
 extern time_t       UNIXTIME;
 extern struct tm    g_localTime;
 
+//memory alloc funcs
 #ifdef INTEL_SCALABLE_ALLOCATOR
     #include "tbb/scalable_allocator.h"
-    #define _MALLOC(size)       scalable_malloc(size)
-    #define _CALLOC(num,size)   scalable_calloc(num, size)
-    #define _REALLOC(ptr,size)  scalable_realloc(ptr, size)
-    #define _FREE(ptr)          scalable_free(ptr)
+    #define _MALLOC(size)                       scalable_malloc(size)
+    #define _CALLOC(num,size)                   scalable_calloc(num, size)
+    #define _REALLOC(ptr,size)                  scalable_realloc(ptr, size)
+    #define _FREE(ptr)                          scalable_free(ptr)
+    #define _ALIGNED_MALLOC(size,align)         scalable_aligned_malloc(size, align)
+    #define _ALIGNED_REALLOC(ptr,size,align)    scalable_aligned_realloc(ptr, size, align)
+    #define _ALIGNED_FREE(ptr)                  scalable_aligned_free(ptr)
 #else
-    #define _MALLOC(size)       malloc(size)
-    #define _CALLOC(num,size)   calloc(num, size)
-    #define _REALLOC(ptr,size)  realloc(ptr, size)
-    #define _FREE(ptr)          free(ptr)
+    #define _MALLOC(size)                       malloc(size)
+    #define _CALLOC(num,size)                   calloc(num, size)
+    #define _REALLOC(ptr,size)                  realloc(ptr, size)
+    #define _FREE(ptr)                          free(ptr)
+    #ifdef WIN32
+        #define _ALIGNED_MALLOC(size,align)         _aligned_malloc(size, align)
+        #define _ALIGNED_REALLOC(ptr,size,align)    _aligned_realloc(ptr, size, align)
+        #define _ALIGNED_FREE(ptr)                  _aligned_free(ptr)
+    #else
+        #define _ALIGNED_MALLOC(size,align)         malloc(size)
+        #define _ALIGNED_REALLOC(ptr,size,align)    realloc(ptr, size)
+        #define _ALIGNED_FREE(ptr)                  free(ptr)
+    #endif
 #endif
 
 #ifdef WIN32
