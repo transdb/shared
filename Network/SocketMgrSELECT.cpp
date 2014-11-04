@@ -130,6 +130,13 @@ void SocketMgr::thread_run(ThreadContext *pContext)
         /** clear the exception set for the next loop
          */
         FD_ZERO(&except);
+
+#ifdef WIN32
+		/** clear the writable set for the next loop
+		 *  will work like EV_ONESHOT
+		 */
+		FD_ZERO(&m_writableSet);
+#endif
         
 		//poll sockets status
 		int fd_count = select(FD_SETSIZE, &readable, &writable, &except, NULL);
