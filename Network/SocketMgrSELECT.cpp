@@ -36,7 +36,7 @@ INLINE static void SignalSelect(SOCKET fd)
     }
 }
 
-SocketMgr::SocketMgr()
+SocketMgr::SocketMgr() : m_hasListenSocket(false)
 {
 #ifdef WIN32
 	WSADATA wsaData;
@@ -83,7 +83,13 @@ void SocketMgr::AddSocket(BaseSocket* pSocket, bool listenSocket)
 		else
 			FD_SET(pSocket->GetFd(), &m_readableSet);
 		m_sockets.insert(pSocket);
-
+        
+        //dirty hack for listen socket
+        if(listenSocket)
+        {
+            m_hasListenSocket = true;
+        }
+        
         //signal
         SignalSelect(m_socketPair[esstClient]);
 	}
@@ -130,13 +136,14 @@ void SocketMgr::thread_run(ThreadContext *pContext)
         /** clear the exception set for the next loop
          */
         FD_ZERO(&except);
-
-#ifdef WIN32
-		/** clear the writable set for the next loop
-		 *  will work like EV_ONESHOT
-		 */
-		FD_ZERO(&m_writableSet);
-#endif
+        
+        /** clear the writable set for the next loop
+         *  will work like EV_ONESHOT
+         */
+        if(m_hasListenSocket == false)
+        {
+            FD_ZERO(&m_writableSet);
+        }
         
 		//poll sockets status
 		int fd_count = select(FD_SETSIZE, &readable, &writable, &except, NULL);

@@ -66,6 +66,7 @@ public:
 private:
 	fd_set					m_writableSet;
 	fd_set					m_readableSet;
+    bool                    m_hasListenSocket;
     
     //for signaling
     SOCKET                  m_socketPair[esstNum];
