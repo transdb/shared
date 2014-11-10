@@ -184,7 +184,7 @@ public:
 			//copy buff
 			if(m_capacity)
 			{
-				m_pBuff = (T*)malloc(sizeof(T) * m_capacity);
+				m_pBuff = (T*)_MALLOC(sizeof(T) * m_capacity);
                 if(m_pBuff == NULL)
                 {
                     throw std::bad_alloc();
