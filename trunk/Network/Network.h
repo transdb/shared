@@ -51,7 +51,7 @@
 	#include "ListenSocketLinux.h"
 #endif
 
-#ifdef CONFIG_USE_KQUEUE
+#ifdef CONFIG_USE_KEVENT
     #include "BaseSocket.h"
     #include "SocketKEVENT.h"
     #include "SocketMgrKEVENT.h"

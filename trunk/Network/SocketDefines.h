@@ -40,14 +40,14 @@
     //windows IOCP socket
 #elif defined(CONFIG_USE_SELECT)
     //select socket (multiplatform)
-#elif defined(CONFIG_USE_KQUEUE)
+#elif defined(CONFIG_USE_KEVENT)
     //BSD kevent sockets
     #include <sys/event.h>
 #elif defined(CONFIG_USE_EPOLL)
     //Linux epoll scokets
     #include <sys/epoll.h>
 #else
-    #error "Please define CONFIG_USE_IOCP for Windows, CONFIG_USE_SELECT for select, CONFIG_USE_KQUEUE kevent, CONFIG_USE_EPOLL for epoll"
+    #error "Please define CONFIG_USE_IOCP for Windows, CONFIG_USE_SELECT for select, CONFIG_USE_KEVENT kevent, CONFIG_USE_EPOLL for epoll"
 #endif
 
 //

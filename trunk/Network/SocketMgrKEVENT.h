@@ -22,7 +22,7 @@
 #define SOCKETMGR_MAC_H
 
 #include "SocketDefines.h"
-#ifdef CONFIG_USE_KQUEUE
+#ifdef CONFIG_USE_KEVENT
 
 class Socket;
 class SocketWorkerThread;

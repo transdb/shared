@@ -19,7 +19,7 @@
 
 #include "Network.h"
 
-#ifdef CONFIG_USE_KQUEUE
+#ifdef CONFIG_USE_KEVENT
 
 Socket::Socket(SOCKET fd, size_t readbuffersize, size_t writebuffersize) : m_readBuffer(readbuffersize), m_writeBuffer(writebuffersize)
 {
