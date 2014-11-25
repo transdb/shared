@@ -19,7 +19,7 @@
 			
 #include "Network.h"
 
-#ifdef CONFIG_USE_KQUEUE
+#ifdef CONFIG_USE_KEVENT
 
 initialiseSingleton(SocketMgr);
 
