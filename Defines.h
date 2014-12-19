@@ -209,8 +209,13 @@ extern struct tm    g_localTime;
         #define _ALIGNED_REALLOC(ptr,size,align)    _aligned_realloc(ptr, size, align)
         #define _ALIGNED_FREE(ptr)                  _aligned_free(ptr)
     #else
-        #define _ALIGNED_MALLOC(size,align)         malloc(size)
-        #define _ALIGNED_REALLOC(ptr,size,align)    realloc(ptr, size)
+        static void* __aligned_malloc(size_t size, size_t align)
+        {
+            void* pMem;
+            posix_memalign(&pMem, align, size);
+            return pMem;
+        }
+        #define _ALIGNED_MALLOC(size,align)         __aligned_malloc(size, align)
         #define _ALIGNED_FREE(ptr)                  free(ptr)
     #endif
 #endif
