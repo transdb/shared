@@ -218,7 +218,10 @@ extern struct tm    g_localTime;
         }
         static inline void __aligned_free(void *ptr)
         {
-            free(((void**)ptr)[-1]);
+            if(ptr != NULL)
+            {
+                free(((void**)ptr)[-1]);
+            }
         }
         #define _ALIGNED_MALLOC(size,align)         __aligned_malloc(size, align)
         #define _ALIGNED_FREE(ptr)                  __aligned_free(ptr)
